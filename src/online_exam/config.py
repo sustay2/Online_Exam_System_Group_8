@@ -1,5 +1,3 @@
-import os
-
 class Config:
     DB_NAME = "examdb"
     DB_USER = "examuser"
