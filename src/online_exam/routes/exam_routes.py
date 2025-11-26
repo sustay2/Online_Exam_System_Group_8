@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app import db
-from models.exam import Exam
+from .. import db
+from ..models.exam import Exam
 
 exam_bp = Blueprint("exam", __name__, url_prefix="/exams")
 

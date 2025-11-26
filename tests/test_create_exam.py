@@ -1,7 +1,6 @@
-from models.exam import Exam
-from app import db
+from online_exam.models.exam import Exam
 
-# ---------- 1. GET /exams/create shows the form ----------
+# 1. GET /exams/create shows the form
 
 def test_create_exam_form_get(client):
     response = client.get("/exams/create")
@@ -9,7 +8,7 @@ def test_create_exam_form_get(client):
     assert b"Create Exam" in response.data
 
 
-# ---------- 2. POST /exams/create with valid data saves a draft ----------
+# 2. POST /exams/create with valid data saves a draft
 
 def test_create_exam_valid_post_creates_draft(client):
     response = client.post(
@@ -32,7 +31,7 @@ def test_create_exam_valid_post_creates_draft(client):
     assert exam.instructions == "Answer all questions."
 
 
-# ---------- 3. POST /exams/create without title -> validation error ----------
+# 3. POST /exams/create without title -> validation error
 
 def test_create_exam_missing_title_shows_error(client):
     response = client.post(
