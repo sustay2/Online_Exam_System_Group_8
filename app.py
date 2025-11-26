@@ -16,8 +16,10 @@ def create_app():
 
     # register routes
     from routes.auth_routes import auth_bp
+    from routes.exam_routes import exam_bp
 
     app.register_blueprint(auth_bp)
+    app.register_blueprint(exam_bp)
 
     @app.route("/")
     def home():

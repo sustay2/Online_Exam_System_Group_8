@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>{{ exam.title }}</h2>
+    <p><strong>Status:</strong> {{ exam.status }}</p>
+
+    <h5>Description</h5>
+    <p>{{ exam.description or "No description provided." }}</p>
+
+    <h5>Instructions</h5>
+    <p>{{ exam.instructions or "No instructions provided." }}</p>
+
+    <a href="/exams/{{ exam.id }}/edit" class="btn btn-warning">Edit</a>
+</div>
+{% endblock %}
