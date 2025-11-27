@@ -11,8 +11,13 @@ class TestConfig(Config):
 
 @pytest.fixture
 def app():
-    app = create_app()
-    app.config.from_object(TestConfig)
+    app = create_app(
+        {
+            "TESTING": True,
+            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",
+            "WTF_CSRF_ENABLED": False,
+        }
+    )
 
     with app.app_context():
         db.create_all()

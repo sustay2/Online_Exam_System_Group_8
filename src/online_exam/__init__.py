@@ -7,15 +7,18 @@ db = SQLAlchemy()
 migrate = Migrate()
 
 
-def create_app():
+def create_app(test_config=None):
     app = Flask(__name__)
+
     app.config.from_object(Config)
 
-    # init extensions
+    if test_config:
+        app.config.update(test_config)
+
     db.init_app(app)
     migrate.init_app(app, db)
 
-    # register routes
+    # Register blueprints and routes
     from .routes.auth_routes import auth_bp
     from .routes.exam_routes import exam_bp
 
