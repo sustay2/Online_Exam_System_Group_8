@@ -28,6 +28,8 @@ jobs:
         run: |
           pip install mypy types-requests
           mypy src
+      - name: Add src to PYTHONPATH
+        run: echo "PYTHONPATH=$PWD/src" >> $GITHUB_ENV
       - name: Test
         run: |
           pytest --maxfail=1 --disable-warnings -q --cov=src --cov-report=xml
