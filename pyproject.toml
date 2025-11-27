@@ -30,7 +30,10 @@ dev = [
   "pytest-bdd",
   "fastapi",
   "uvicorn",
-  "fastapi[testclient]"
+  "fastapi[testclient]",
+  "types-Flask",
+  "types-Flask-SQLAlchemy",
+  "types-Flask-Migrate",
 ]
 
 [tool.ruff]

@@ -13,3 +13,6 @@ pytest-bdd
 fastapi
 uvicorn
 fastapi[testclient]
+types-Flask
+types-Flask-SQLAlchemy
+types-Flask-Migrate
