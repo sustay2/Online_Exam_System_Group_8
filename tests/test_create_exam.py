@@ -2,6 +2,7 @@ from online_exam.models.exam import Exam
 
 # 1. GET /exams/create shows the form
 
+
 def test_create_exam_form_get(client):
     response = client.get("/exams/create")
     assert response.status_code == 200
@@ -10,13 +11,14 @@ def test_create_exam_form_get(client):
 
 # 2. POST /exams/create with valid data saves a draft
 
+
 def test_create_exam_valid_post_creates_draft(client):
     response = client.post(
         "/exams/create",
         data={
             "title": "Midterm Test",
             "description": "Covers chapters 1\u20113",
-            "instructions": "Answer all questions."
+            "instructions": "Answer all questions.",
         },
         follow_redirects=True,
     )
@@ -33,14 +35,11 @@ def test_create_exam_valid_post_creates_draft(client):
 
 # 3. POST /exams/create without title -> validation error
 
+
 def test_create_exam_missing_title_shows_error(client):
     response = client.post(
         "/exams/create",
-        data={
-            "title": "",
-            "description": "Desc",
-            "instructions": "Instr"
-        },
+        data={"title": "", "description": "Desc", "instructions": "Instr"},
         follow_redirects=True,
     )
 

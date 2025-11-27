@@ -2,10 +2,12 @@ import pytest
 from online_exam import create_app, db
 from online_exam.config import Config
 
+
 class TestConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
+
 
 @pytest.fixture
 def app():
@@ -17,6 +19,7 @@ def app():
         yield app
         db.session.remove()
         db.drop_all()
+
 
 @pytest.fixture
 def client(app):

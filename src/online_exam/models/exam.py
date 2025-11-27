@@ -1,6 +1,7 @@
 from .. import db
 from datetime import datetime
 
+
 class Exam(db.Model):
     __tablename__ = "exams"
 
