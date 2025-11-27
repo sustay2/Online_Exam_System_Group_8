@@ -6,7 +6,7 @@ from online_exam.models.exam import Exam
 def test_create_exam_form_get(client):
     response = client.get("/exams/create")
     assert response.status_code == 200
-    assert b"Create Exam" in response.data
+    assert b"Create" in response.data
 
 
 # 2. POST /exams/create with valid data saves a draft

@@ -2,7 +2,7 @@ from .. import db
 from datetime import datetime
 
 
-class Exam(db.Model):
+class Exam(db.Model):  # type: ignore[misc, name-defined]
     __tablename__ = "exams"
 
     id = db.Column(db.Integer, primary_key=True)
