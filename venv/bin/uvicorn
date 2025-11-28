@@ -1,4 +1,4 @@
-#!/home/alexsim/Online_Exam_System_Group_8/venv/bin/python3.12
+#!/home/zijie/agile-demo/Online_Exam_System-Group_8/venv/bin/python3
 import sys
 from uvicorn.main import main
 if __name__ == '__main__':

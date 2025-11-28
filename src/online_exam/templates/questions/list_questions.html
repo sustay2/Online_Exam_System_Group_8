@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Questions - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Questions for: {{ exam.title }}</h2>
+            <p class="text-muted mb-0">
+                {{ exam.course_code }} | {{ exam.duration }} minutes
+                {% if exam.status == 'published' %}
+                    <span class="badge bg-success ms-2">Published</span>
+                {% else %}
+                    <span class="badge bg-warning text-dark ms-2">Draft</span>
+                {% endif %}
+            </p>
+        </div>
+        <div>
+            <a href="{{ url_for('exam.view_exam', exam_id=exam.id) }}" class="btn btn-outline-secondary me-2">
+                <i class="bi bi-arrow-left me-1"></i> Back to Exam
+            </a>
+            {% if exam.status != 'published' %}
+            <a href="{{ url_for('question.add_question', exam_id=exam.id) }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Add Question
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Total Questions</h5>
+                    <h2 class="mb-0">{{ total_questions }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">MCQ Questions</h5>
+                    <h2 class="mb-0 text-primary">{{ mcq_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Written Questions</h5>
+                    <h2 class="mb-0 text-warning">{{ written_count }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Total Points</h5>
+                    <h2 class="mb-0 text-success">{{ total_points }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions List -->
+    {% if questions %}
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Question List</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th style="width: 5%">#</th>
+                            <th style="width: 50%">Question</th>
+                            <th style="width: 15%">Type</th>
+                            <th style="width: 10%">Points</th>
+                            <th style="width: 20%">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for question in questions %}
+                        <tr>
+                            <td>
+                                <span class="badge bg-secondary">{{ question.order_num }}</span>
+                            </td>
+                            <td>
+                                <strong>{{ question.question_text[:100] }}{% if question.question_text|length > 100 %}...{% endif %}</strong>
+                                {% if question.is_mcq() %}
+                                <div class="mt-2 small text-muted">
+                                    <div><strong>A:</strong> {{ question.option_a[:50] }}{% if question.option_a|length > 50 %}...{% endif %}</div>
+                                    <div><strong>B:</strong> {{ question.option_b[:50] }}{% if question.option_b|length > 50 %}...{% endif %}</div>
+                                    <div><strong>C:</strong> {{ question.option_c[:50] }}{% if question.option_c|length > 50 %}...{% endif %}</div>
+                                    <div><strong>D:</strong> {{ question.option_d[:50] }}{% if question.option_d|length > 50 %}...{% endif %}</div>
+                                    <div class="mt-1"><span class="badge bg-success">Correct: {{ question.correct_answer }}</span></div>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if question.is_mcq() %}
+                                    <span class="badge bg-primary">MCQ</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark">Written</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ question.points }} pts</span>
+                            </td>
+                            <td>
+                                {% if exam.status != 'published' %}
+                                <a href="{{ url_for('question.edit_question', exam_id=exam.id, question_id=question.id) }}" 
+                                   class="btn btn-sm btn-outline-primary" title="Edit Question">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a>
+                                <form action="{{ url_for('question.delete_question', exam_id=exam.id, question_id=question.id) }}" 
+                                      method="POST" 
+                                      class="d-inline"
+                                      onsubmit="return confirm('Are you sure you want to delete this question?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete Question">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="bi bi-lock"></i> Locked
+                                </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    {% if exam.status == 'published' %}
+    <div class="alert alert-info mt-3" role="alert">
+        <i class="bi bi-info-circle me-2"></i>
+        This exam is published. Questions cannot be modified or deleted.
+    </div>
+    {% endif %}
+
+    {% else %}
+    <!-- Empty State -->
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <i class="bi bi-question-circle display-1 text-muted"></i>
+            <h4 class="mt-3">No questions added yet</h4>
+            <p class="text-muted">Start building your exam by adding your first question.</p>
+            {% if exam.status != 'published' %}
+            <a href="{{ url_for('question.add_question', exam_id=exam.id) }}" class="btn btn-primary mt-3">
+                <i class="bi bi-plus-circle me-1"></i> Add First Question
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
