@@ -1,7 +1,6 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-
 from .config import Config
 
 db = SQLAlchemy()
@@ -11,24 +10,15 @@ migrate = Migrate()
 def create_app(test_config=None):
     app = Flask(__name__)
 
-    # Load config
     app.config.from_object(Config)
 
     if test_config:
         app.config.update(test_config)
 
-    # Initialize extensions
     db.init_app(app)
-
-    # --- IMPORTANT: import models BEFORE migrate.init_app ---
-    # This ensures Flask-Migrate sees your models.
-    from .models.exam import Exam
-    from .models.user import User   # (if you have a user model)
-    # Add any other models here...
-
     migrate.init_app(app, db)
 
-    # Register blueprints
+    # Register blueprints and routes
     from .routes.auth_routes import auth_bp
     from .routes.exam_routes import exam_bp
 
