@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
-from online_exam.models.exam import Exam
+
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+
 from online_exam import db
+from online_exam.models.exam import Exam
 
 schedule_bp = Blueprint("schedule", __name__, url_prefix="/exams")
 

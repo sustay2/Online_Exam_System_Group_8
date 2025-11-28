@@ -1,5 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash
 from datetime import datetime
+
+from flask import Blueprint, flash, redirect, render_template, request, url_for
+
 from .. import db
 from ..models.exam import Exam
 
@@ -64,13 +66,17 @@ def create_exam():
     db.session.commit()
 
     flash("Draft exam created successfully!", "success")
-
     return redirect(url_for("exam.view_exam", exam_id=exam.id))
 
 
 @exam_bp.route("/<int:exam_id>/edit", methods=["GET", "POST"])
 def edit_exam(exam_id):
     exam = Exam.query.get_or_404(exam_id)
+
+    # BLOCK EDITING AFTER PUBLISH
+    if exam.status == "published":
+        flash("Cannot edit a published exam.", "danger")
+        return redirect(url_for("exam.view_exam", exam_id=exam.id))
 
     if request.method == "POST":
         title = request.form.get("title")
@@ -98,3 +104,17 @@ def edit_exam(exam_id):
 def view_exam(exam_id):
     exam = Exam.query.get_or_404(exam_id)
     return render_template("exams/view_exam.html", exam=exam)
+
+
+@exam_bp.route("/<int:exam_id>/publish", methods=["POST"])
+def publish_exam(exam_id):
+    exam = Exam.query.get_or_404(exam_id)
+
+    if exam.status == "published":
+        flash("This exam is already published.", "info")
+    else:
+        exam.status = "published"
+        db.session.commit()
+        flash("Exam published successfully! Students can now see it.", "success")
+
+    return redirect(url_for("exam.view_exam", exam_id=exam.id))

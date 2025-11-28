@@ -1,35 +1,19 @@
-.PHONY: install lint test run format type ci db-up db-shell
-
-VENV := venv
-PYTHON := $(VENV)/bin/python
-
-install:
-	pip install -e ".[dev]"
-
-lint:
-	ruff check .
-	black --check .
-	mypy src
-	pytest --maxfail=1 --disable-warnings -q
+.PHONY: format lint test ci
 
 format:
-	ruff check . --fix
+	@echo "Formatting..."
 	black .
 	isort .
 
-type:
+lint:
+	@echo "Linting & type checking..."
+	ruff check .
+	black --check .
 	mypy src
 
 test:
-	pytest --cov=src --cov-report=term-missing
+	@echo "Running tests..."
+	pytest -q
 
-run:
-	flask --app src/online_exam:create_app run --debug
-
-ci: lint type test
-
-db-up:
-	sudo systemctl start mysql || true
-
-db-shell:
-	mysql -u examuser -p examdb
+ci: lint test
+	@echo "CI pipeline completed successfully!"

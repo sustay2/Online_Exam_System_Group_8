@@ -1,4 +1,4 @@
-#!/home/wlws/projects/Online_Exam_System_Group_8/venv/bin/python3
+#!/home/wlws/projects/Online_Exam_System_Group_8/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys

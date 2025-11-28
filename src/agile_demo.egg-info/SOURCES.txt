@@ -15,7 +15,9 @@ src/online_exam/models/user.py
 src/online_exam/routes/__init__.py
 src/online_exam/routes/auth_routes.py
 src/online_exam/routes/exam_routes.py
-tests/test_app.py
+src/online_exam/routes/schedule_routes.py
 tests/test_create_exam.py
 tests/test_edit_exam.py
 tests/test_list_exams.py
+tests/test_publish_exam.py
+tests/test_schedule_exam.py
