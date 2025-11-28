@@ -1,6 +1,7 @@
 from datetime import datetime
-from online_exam.models.exam import Exam
+
 from online_exam import db
+from online_exam.models.exam import Exam
 
 
 def test_schedule_exam_get_form(client, app):

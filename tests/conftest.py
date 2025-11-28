@@ -1,11 +1,12 @@
 import pytest
+
 from online_exam import create_app, db
 from online_exam.config import Config
 
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = "zsqlite:///:memory:"
     WTF_CSRF_ENABLED = False
 
 

@@ -1,7 +1,8 @@
 from datetime import datetime
 from online_exam import db
 
-class Exam(db.Model):
+
+class Exam(db.Model):  # type: ignore[misc, name-defined]
     __tablename__ = "exams"
 
     id = db.Column(db.Integer, primary_key=True)
@@ -17,3 +18,4 @@ class Exam(db.Model):
     duration_minutes = db.Column(db.Integer)
 
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

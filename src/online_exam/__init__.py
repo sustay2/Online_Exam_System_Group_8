@@ -20,20 +20,20 @@ def create_app(test_config=None):
     # Initialize extensions
     db.init_app(app)
 
-    # --- IMPORTANT: import models BEFORE migrate.init_app ---
-    # This ensures Flask-Migrate sees your models.
-    from .models.exam import Exam
-    from .models.user import User   # (if you have a user model)
-    # Add any other models here...
+    # routes
+    from .models.exam import Exam  # noqa: F401
+    from .models.user import User  # noqa: F401
 
     migrate.init_app(app, db)
 
     # Register blueprints
     from .routes.auth_routes import auth_bp
     from .routes.exam_routes import exam_bp
+    from .routes.schedule_routes import schedule_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(exam_bp)
+    app.register_blueprint(schedule_bp)
 
     @app.route("/")
     def home():
