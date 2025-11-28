@@ -15,19 +15,21 @@
     <!-- Score Card -->
     <div class="row justify-content-center mb-4">
         <div class="col-md-8">
-            <div class="card text-center {% if submission.percentage >= 50 %}border-success{% else %}border-danger{% endif %}">
+            <div
+                class="card text-center {% if submission.percentage >= 50 %}border-success{% else %}border-danger{% endif %}">
                 <div class="card-body">
-                    <h1 class="display-1 {% if submission.percentage >= 50 %}text-success{% else %}text-danger{% endif %}">
+                    <h1
+                        class="display-1 {% if submission.percentage >= 50 %}text-success{% else %}text-danger{% endif %}">
                         {{ submission.percentage }}%
                     </h1>
                     <h4>Score: {{ submission.total_score }} / {{ submission.max_score }}</h4>
                     <p class="text-muted mb-0">
                         {% if submission.percentage >= 80 %}
-                            <span class="badge bg-success">Excellent!</span>
+                        <span class="badge bg-success">Excellent!</span>
                         {% elif submission.percentage >= 50 %}
-                            <span class="badge bg-warning text-dark">Good</span>
+                        <span class="badge bg-warning text-dark">Good</span>
                         {% else %}
-                            <span class="badge bg-danger">Needs Improvement</span>
+                        <span class="badge bg-danger">Needs Improvement</span>
                         {% endif %}
                     </p>
                 </div>
@@ -46,18 +48,18 @@
                     <span>
                         <strong>Question {{ question.order_num }}</strong>
                         {% if question.is_mcq() %}
-                            <span class="badge bg-primary ms-2">MCQ</span>
+                        <span class="badge bg-primary ms-2">MCQ</span>
                         {% else %}
-                            <span class="badge bg-warning text-dark ms-2">Written</span>
+                        <span class="badge bg-warning text-dark ms-2">Written</span>
                         {% endif %}
                     </span>
                     <span>
                         {% if answer.is_correct %}
-                            <span class="badge bg-success">✓ Correct (+{{ answer.points_earned }} pts)</span>
+                        <span class="badge bg-success">✓ Correct (+{{ answer.points_earned }} pts)</span>
                         {% elif question.is_written() %}
-                            <span class="badge bg-secondary">Pending Manual Grading</span>
+                        <span class="badge bg-secondary">Pending Manual Grading</span>
                         {% else %}
-                            <span class="badge bg-danger">✗ Incorrect (0 pts)</span>
+                        <span class="badge bg-danger">✗ Incorrect (0 pts)</span>
                         {% endif %}
                     </span>
                 </div>
@@ -65,20 +67,33 @@
                     <p class="mb-2"><strong>Question:</strong> {{ question.question_text }}</p>
 
                     {% if question.is_mcq() %}
-                        <p class="mb-2"><strong>Your Answer:</strong> 
-                            <span class="{% if answer.is_correct %}text-success{% else %}text-danger{% endif %}">
-                                {{ answer.selected_option }}
-                            </span>
-                        </p>
-                        <p class="mb-0"><strong>Correct Answer:</strong> 
-                            <span class="text-success">{{ question.correct_answer }}</span>
-                        </p>
+                    <p class="mb-2"><strong>Your Answer:</strong>
+                        <span class="{% if answer.is_correct %}text-success{% else %}text-danger{% endif %}">
+                            {{ answer.selected_option }}
+                        </span>
+                    </p>
+                    <p class="mb-0"><strong>Correct Answer:</strong>
+                        <span class="text-success">{{ question.correct_answer }}</span>
+                    </p>
                     {% else %}
-                        <p class="mb-0"><strong>Your Answer:</strong></p>
-                        <div class="alert alert-secondary mt-2">
-                            {{ answer.answer_text if answer.answer_text else "(No answer provided)" }}
+                    <p class="mb-0"><strong>Your Answer:</strong></p>
+                    <div class="alert alert-secondary mt-2">
+                        {{ answer.answer_text if answer.answer_text else "(No answer provided)" }}
+                    </div>
+
+                    {% if answer.points_earned > 0 or answer.instructor_comment %}
+                    <div class="mt-2">
+                        <p class="mb-1"><strong>Grade:</strong>
+                            <span class="badge bg-info">{{ answer.points_earned }}/{{ question.points }} points</span>
+                        </p>
+                        {% if answer.instructor_comment %}
+                        <div class="alert alert-info mb-0">
+                            <strong>Instructor Feedback:</strong> {{ answer.instructor_comment }}
                         </div>
+                        {% endif %}
+                    </div>
                     {% endif %}
+                {% endif %}
                 </div>
             </div>
             {% endfor %}

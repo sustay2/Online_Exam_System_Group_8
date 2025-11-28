@@ -15,7 +15,7 @@
                 <i class="bi bi-arrow-left me-1"></i> Back to Questions
             </a>
             <a href="{{ url_for('grading.submit_exam', exam_id=exam.id) }}" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-1"></i> Take Exam 
+                <i class="bi bi-plus-circle me-1"></i> Take Exam
             </a>
         </div>
     </div>
@@ -36,9 +36,9 @@
                     <h5 class="card-title text-muted">Average Score</h5>
                     <h2 class="mb-0 text-primary">
                         {% if submissions %}
-                            {{ "%.1f"|format((submissions|sum(attribute='percentage')) / (submissions|length)) }}%
+                        {{ "%.1f"|format((submissions|sum(attribute='percentage')) / (submissions|length)) }}%
                         {% else %}
-                            0%
+                        0%
                         {% endif %}
                     </h2>
                 </div>
@@ -92,29 +92,34 @@
                             <td>{{ loop.index }}</td>
                             <td><strong>{{ submission.student_name }}</strong></td>
                             <td>
-                                <span class="badge bg-info">{{ submission.total_score }}/{{ submission.max_score }}</span>
+                                <span class="badge bg-info">{{ submission.total_score }}/{{ submission.max_score
+                                    }}</span>
                             </td>
                             <td>
                                 {% if submission.percentage >= 80 %}
-                                    <span class="badge bg-success">{{ submission.percentage }}%</span>
+                                <span class="badge bg-success">{{ submission.percentage }}%</span>
                                 {% elif submission.percentage >= 50 %}
-                                    <span class="badge bg-warning text-dark">{{ submission.percentage }}%</span>
+                                <span class="badge bg-warning text-dark">{{ submission.percentage }}%</span>
                                 {% else %}
-                                    <span class="badge bg-danger">{{ submission.percentage }}%</span>
+                                <span class="badge bg-danger">{{ submission.percentage }}%</span>
                                 {% endif %}
                             </td>
                             <td>
                                 {% if submission.status == 'graded' %}
-                                    <span class="badge bg-success">Graded</span>
+                                <span class="badge bg-success">Graded</span>
                                 {% else %}
-                                    <span class="badge bg-warning text-dark">Pending</span>
+                                <span class="badge bg-warning text-dark">Pending</span>
                                 {% endif %}
                             </td>
                             <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
-                                <a href="{{ url_for('grading.view_results', submission_id=submission.id) }}" 
-                                   class="btn btn-sm btn-outline-primary" title="View Results">
+                                <a href="{{ url_for('grading.view_results', submission_id=submission.id) }}"
+                                    class="btn btn-sm btn-outline-primary me-1" title="View Results">
                                     <i class="bi bi-eye"></i> View
+                                </a>
+                                <a href="{{ url_for('grading.manual_grade', submission_id=submission.id) }}"
+                                    class="btn btn-sm btn-outline-success" title="Grade Manually">
+                                    <i class="bi bi-pencil"></i> Grade
                                 </a>
                             </td>
                         </tr>
@@ -132,7 +137,7 @@
             <h4 class="mt-3">No submissions yet</h4>
             <p class="text-muted">Students haven't taken this exam yet.</p>
             <a href="{{ url_for('grading.submit_exam', exam_id=exam.id) }}" class="btn btn-primary mt-3">
-                <i class="bi bi-plus-circle me-1"></i> Take Exam 
+                <i class="bi bi-plus-circle me-1"></i> Take Exam
             </a>
         </div>
     </div>

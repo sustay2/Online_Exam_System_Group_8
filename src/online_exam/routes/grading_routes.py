@@ -114,3 +114,71 @@ def list_submissions(exam_id):
         exam=exam,
         submissions=submissions
     )
+
+@grading_bp.route("/submissions/<int:submission_id>/grade", methods=["GET", "POST"])
+def manual_grade(submission_id):
+    """Manually grade written questions."""
+    submission = Submission.query.get_or_404(submission_id)
+    exam = Exam.query.get_or_404(submission.exam_id)
+    
+    # Get all answers with their questions
+    answers = (
+        db.session.query(Answer, Question)
+        .join(Question, Answer.question_id == Question.id)
+        .filter(Answer.submission_id == submission_id)
+        .order_by(Question.order_num)
+        .all()
+    )
+
+    if request.method == "POST":
+        total_score = 0
+        max_score = 0
+
+        # Process grading for each question
+        for answer, question in answers:
+            max_score += question.points
+
+            if question.is_mcq():
+                # MCQ already graded, just add to total
+                total_score += answer.points_earned
+            else:
+                # Manual grading for written questions
+                points_str = request.form.get(f"points_{answer.id}", "0")
+                try:
+                    points = int(points_str)
+                except ValueError:
+                    points = 0
+                
+                # Validate points don't exceed max
+                if points > question.points:
+                    points = question.points
+                if points < 0:
+                    points = 0
+                    
+                comment = request.form.get(f"comment_{answer.id}", "").strip()
+                
+                # Update answer
+                answer.points_earned = points
+                answer.instructor_comment = comment
+                answer.is_correct = (points == question.points)
+                
+                total_score += points
+
+        # Update submission
+        submission.total_score = total_score
+        submission.max_score = max_score
+        submission.calculate_percentage()
+        submission.status = "graded"
+        submission.graded_at = datetime.utcnow()
+
+        db.session.commit()
+
+        flash(f"Grading saved successfully! Final Score: {total_score}/{max_score} ({submission.percentage}%)", "success")
+        return redirect(url_for("grading.view_results", submission_id=submission_id))
+
+    return render_template(
+        "grading/manual_grade.html",
+        submission=submission,
+        exam=exam,
+        answers=answers
+    )
