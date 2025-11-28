@@ -1,4 +1,4 @@
-#!/home/alexsim/Online_Exam_System_Group_8/venv/bin/python3.12
+#!/home/wlws/projects/Online_Exam_System_Group_8/venv/bin/python3
 # -*- coding: utf-8 -*-
 import re
 import sys

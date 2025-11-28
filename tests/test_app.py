@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+
 from agile_ci_demo.app import app
 
 client = TestClient(app)

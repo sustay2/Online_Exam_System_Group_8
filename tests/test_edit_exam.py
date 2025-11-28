@@ -1,5 +1,6 @@
-from online_exam.models.exam import Exam
 from datetime import datetime
+
+from online_exam.models.exam import Exam
 
 
 def create_sample_exam(db):

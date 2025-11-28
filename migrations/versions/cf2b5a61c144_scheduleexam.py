@@ -1,8 +1,8 @@
-"""empty message
+"""scheduleexam
 
-Revision ID: 193d3f23bea8
-Revises:
-Create Date: 2025-11-27 03:34:45.024600
+Revision ID: cf2b5a61c144
+Revises: b5feba8e4925
+Create Date: 2025-11-28 12:13:11.615950
 
 """
 
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision = "193d3f23bea8"
-down_revision = None
+revision = "cf2b5a61c144"
+down_revision = "b5feba8e4925"
 branch_labels = None
 depends_on = None
 
@@ -25,8 +25,10 @@ def upgrade():
         sa.Column("description", sa.Text(), nullable=True),
         sa.Column("instructions", sa.Text(), nullable=True),
         sa.Column("status", sa.String(length=20), nullable=True),
+        sa.Column("start_time", sa.DateTime(), nullable=True),
+        sa.Column("end_time", sa.DateTime(), nullable=True),
+        sa.Column("duration_minutes", sa.Integer(), nullable=True),
         sa.Column("created_at", sa.DateTime(), nullable=True),
-        sa.Column("updated_at", sa.DateTime(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###
