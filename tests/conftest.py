@@ -83,3 +83,23 @@ def sample_question(app, sample_exam):
         db.session.add(question)
         db.session.commit()
         yield question
+
+@pytest.fixture
+def sample_mcq_question(app, sample_exam):
+    """Create a sample MCQ question."""
+    with app.app_context():
+        question = Question(
+            exam_id=sample_exam.id,
+            question_text="What is 2 + 2?",
+            question_type="mcq",
+            points=10,
+            option_a="3",
+            option_b="4",
+            option_c="5",
+            option_d="6",
+            correct_answer="B",
+            order_num=1,
+        )
+        db.session.add(question)
+        db.session.commit()
+        yield question
