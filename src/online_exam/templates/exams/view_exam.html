@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-journal-text text-primary fs-2 me-2"></i>
+            <h2 class="mb-0">{{ exam.title }}</h2>
+        </div>
+
+        <div class="d-flex gap-2">
+            <!-- Edit Button - Hidden if already published -->
+            {% if exam.status != "published" %}
+                <a href="{{ url_for('exam.edit_exam', exam_id=exam.id) }}" class="btn btn-warning">
+                    <i class="bi bi-pencil-square me-1"></i> Edit Exam
+                </a>
+            {% endif %}
+
+            <!-- Publish Button - Only show if still draft -->
+            {% if exam.status != "published" %}
+                <form method="POST" action="{{ url_for('exam.publish_exam', exam_id=exam.id) }}" style="display: inline;">
+                    <button type="submit"
+                            class="btn btn-success"
+                            onclick="return confirm('Publish this exam now?\n\nStudents will be able to see and attempt it immediately.');">
+                        <i class="bi bi-globe me-1"></i> Publish Exam
+                    </button>
+                </form>
+            {% endif %}
+
+            <!-- Published Badge - Show when published -->
+            {% if exam.status == "published" %}
+                <span class="btn btn-success disabled">
+                    <i class="bi bi-check2-all me-1"></i> Published
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body p-4">
+            <h5 class="fw-semibold mb-3">Exam Metadata</h5>
+
+            <p class="mb-2">
+                <strong>Status:</strong>
+                {% if exam.status == "published" %}
+                    <span class="badge bg-success">Published</span>
+                {% else %}
+                    <span class="badge bg-secondary">Draft</span>
+                {% endif %}
+            </p>
+
+            <p class="mb-2">
+                <strong>Created:</strong>
+                {{ exam.created_at.strftime('%Y-%m-%d %H:%M') }}
+            </p>
+
+            <p class="mb-4">
+                <strong>Last Updated:</strong>
+                {{ exam.updated_at.strftime('%Y-%m-%d %H:%M') }}
+            </p>
+
+            <hr>
+
+            <h5 class="fw-semibold mt-4">Description</h5>
+            <div class="alert alert-light border text-muted">
+                {{ exam.description or "No description provided." }}
+            </div>
+
+            <h5 class="fw-semibold mt-4">Instructions</h5>
+            <div class="alert alert-light border text-muted">
+                {{ exam.instructions or "No instructions provided." }}
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-start gap-2">
+        <a href="/exams" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Exams
+        </a>
+    </div>
+</div>
+{% endblock %}
