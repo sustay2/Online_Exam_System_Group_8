@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from online_exam import db
+from .. import db
 
 
 class Submission(db.Model):  # type: ignore[misc, name-defined]
