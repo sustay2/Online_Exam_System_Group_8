@@ -10,3 +10,4 @@ venv/
 .env/
 .ruff_cache/
 migrations/
+.mypy_cache/
