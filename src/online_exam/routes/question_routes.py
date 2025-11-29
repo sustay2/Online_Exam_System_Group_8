@@ -59,12 +59,18 @@ def add_question(exam_id):
             return redirect(url_for("question.add_question", exam_id=exam_id))
 
         # Get the next order number
-        max_order = db.session.query(db.func.max(Question.order_num)).filter_by(exam_id=exam_id).scalar()
+        max_order = (
+            db.session.query(db.func.max(Question.order_num)).filter_by(exam_id=exam_id).scalar()
+        )
         order_num = (max_order or 0) + 1
 
         # Create question
         question = Question(
-            exam_id=exam_id, question_text=question_text, question_type=question_type, points=points, order_num=order_num
+            exam_id=exam_id,
+            question_text=question_text,
+            question_type=question_type,
+            points=points,
+            order_num=order_num,
         )
 
         # Handle MCQ-specific fields
@@ -123,11 +129,15 @@ def edit_question(exam_id, question_id):
         # Validation
         if not question_text:
             flash("Question text is required.", "error")
-            return redirect(url_for("question.edit_question", exam_id=exam_id, question_id=question_id))
+            return redirect(
+                url_for("question.edit_question", exam_id=exam_id, question_id=question_id)
+            )
 
         if points <= 0:
             flash("Points must be greater than 0.", "error")
-            return redirect(url_for("question.edit_question", exam_id=exam_id, question_id=question_id))
+            return redirect(
+                url_for("question.edit_question", exam_id=exam_id, question_id=question_id)
+            )
 
         # Update question
         question.question_text = question_text
@@ -144,11 +154,15 @@ def edit_question(exam_id, question_id):
             # Validate MCQ fields
             if not all([option_a, option_b, option_c, option_d]):
                 flash("All four options are required for MCQ questions.", "error")
-                return redirect(url_for("question.edit_question", exam_id=exam_id, question_id=question_id))
+                return redirect(
+                    url_for("question.edit_question", exam_id=exam_id, question_id=question_id)
+                )
 
             if correct_answer not in ["A", "B", "C", "D"]:
                 flash("Correct answer must be A, B, C, or D.", "error")
-                return redirect(url_for("question.edit_question", exam_id=exam_id, question_id=question_id))
+                return redirect(
+                    url_for("question.edit_question", exam_id=exam_id, question_id=question_id)
+                )
 
             question.option_a = option_a
             question.option_b = option_b

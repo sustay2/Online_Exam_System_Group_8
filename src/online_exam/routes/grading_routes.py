@@ -20,11 +20,7 @@ def submit_exam(exam_id):
         student_name = request.form.get("student_name", "Test Student")
 
         # Create submission
-        submission = Submission(
-            exam_id=exam_id,
-            student_name=student_name,
-            status="pending"
-        )
+        submission = Submission(exam_id=exam_id, student_name=student_name, status="pending")
         db.session.add(submission)
         db.session.flush()  # Get submission ID
 
@@ -38,10 +34,10 @@ def submit_exam(exam_id):
             if question.is_mcq():
                 # Get selected option
                 selected_option = request.form.get(f"question_{question.id}")
-                
+
                 if selected_option:
                     selected_option = selected_option.upper()
-                    is_correct = (selected_option == question.correct_answer)
+                    is_correct = selected_option == question.correct_answer
                     points_earned = question.points if is_correct else 0
                     total_score += points_earned
 
@@ -50,7 +46,7 @@ def submit_exam(exam_id):
                         question_id=question.id,
                         selected_option=selected_option,
                         is_correct=is_correct,
-                        points_earned=points_earned
+                        points_earned=points_earned,
                     )
                     db.session.add(answer)
             else:
@@ -61,7 +57,7 @@ def submit_exam(exam_id):
                     question_id=question.id,
                     answer_text=answer_text,
                     is_correct=False,
-                    points_earned=0  # Will be manually graded
+                    points_earned=0,  # Will be manually graded
                 )
                 db.session.add(answer)
 
@@ -74,7 +70,10 @@ def submit_exam(exam_id):
 
         db.session.commit()
 
-        flash(f"Exam submitted successfully! Score: {total_score}/{max_score} ({submission.percentage}%)", "success")
+        flash(
+            f"Exam submitted successfully! Score: {total_score}/{max_score} ({submission.percentage}%)",
+            "success",
+        )
         return redirect(url_for("grading.view_results", submission_id=submission.id))
 
     return render_template("grading/submit_exam.html", exam=exam, questions=questions)
@@ -85,7 +84,7 @@ def view_results(submission_id):
     """View submission results."""
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
-    
+
     # Get all answers with their questions
     answers = (
         db.session.query(Answer, Question)
@@ -96,10 +95,7 @@ def view_results(submission_id):
     )
 
     return render_template(
-        "grading/view_results.html",
-        submission=submission,
-        exam=exam,
-        answers=answers
+        "grading/view_results.html", submission=submission, exam=exam, answers=answers
     )
 
 
@@ -107,20 +103,19 @@ def view_results(submission_id):
 def list_submissions(exam_id):
     """List all submissions for an exam."""
     exam = Exam.query.get_or_404(exam_id)
-    submissions = Submission.query.filter_by(exam_id=exam_id).order_by(Submission.submitted_at.desc()).all()
-
-    return render_template(
-        "grading/list_submissions.html",
-        exam=exam,
-        submissions=submissions
+    submissions = (
+        Submission.query.filter_by(exam_id=exam_id).order_by(Submission.submitted_at.desc()).all()
     )
+
+    return render_template("grading/list_submissions.html", exam=exam, submissions=submissions)
+
 
 @grading_bp.route("/submissions/<int:submission_id>/grade", methods=["GET", "POST"])
 def manual_grade(submission_id):
     """Manually grade written questions."""
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
-    
+
     # Get all answers with their questions
     answers = (
         db.session.query(Answer, Question)
@@ -148,20 +143,20 @@ def manual_grade(submission_id):
                     points = int(points_str)
                 except ValueError:
                     points = 0
-                
+
                 # Validate points don't exceed max
                 if points > question.points:
                     points = question.points
                 if points < 0:
                     points = 0
-                    
+
                 comment = request.form.get(f"comment_{answer.id}", "").strip()
-                
+
                 # Update answer
                 answer.points_earned = points
                 answer.instructor_comment = comment
-                answer.is_correct = (points == question.points)
-                
+                answer.is_correct = points == question.points
+
                 total_score += points
 
         # Update submission
@@ -173,12 +168,12 @@ def manual_grade(submission_id):
 
         db.session.commit()
 
-        flash(f"Grading saved successfully! Final Score: {total_score}/{max_score} ({submission.percentage}%)", "success")
+        flash(
+            f"Grading saved successfully! Final Score: {total_score}/{max_score} ({submission.percentage}%)",
+            "success",
+        )
         return redirect(url_for("grading.view_results", submission_id=submission_id))
 
     return render_template(
-        "grading/manual_grade.html",
-        submission=submission,
-        exam=exam,
-        answers=answers
+        "grading/manual_grade.html", submission=submission, exam=exam, answers=answers
     )

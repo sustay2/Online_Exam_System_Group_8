@@ -175,7 +175,10 @@ def test_written_question_not_auto_graded(client, sample_exam, db_session):
     # Submit exam with written answer
     response = client.post(
         f"/exams/{sample_exam.id}/submit",
-        data={"student_name": "Student A", f"question_{question.id}": "The water cycle involves..."},
+        data={
+            "student_name": "Student A",
+            f"question_{question.id}": "The water cycle involves...",
+        },
         follow_redirects=True,
     )
 
@@ -196,7 +199,12 @@ def test_view_results_page(client, sample_exam, db_session):
     """Test viewing submission results."""
     # Create submission
     submission = Submission(
-        exam_id=sample_exam.id, student_name="View Test", total_score=80, max_score=100, percentage=80.0, status="graded"
+        exam_id=sample_exam.id,
+        student_name="View Test",
+        total_score=80,
+        max_score=100,
+        percentage=80.0,
+        status="graded",
     )
     db_session.add(submission)
     db_session.commit()
@@ -212,10 +220,20 @@ def test_list_submissions_page(client, sample_exam, db_session):
     """Test listing all submissions for an exam."""
     # Create multiple submissions
     s1 = Submission(
-        exam_id=sample_exam.id, student_name="Student 1", total_score=90, max_score=100, percentage=90.0, status="graded"
+        exam_id=sample_exam.id,
+        student_name="Student 1",
+        total_score=90,
+        max_score=100,
+        percentage=90.0,
+        status="graded",
     )
     s2 = Submission(
-        exam_id=sample_exam.id, student_name="Student 2", total_score=75, max_score=100, percentage=75.0, status="graded"
+        exam_id=sample_exam.id,
+        student_name="Student 2",
+        total_score=75,
+        max_score=100,
+        percentage=75.0,
+        status="graded",
     )
     db_session.add_all([s1, s2])
     db_session.commit()
@@ -229,7 +247,9 @@ def test_list_submissions_page(client, sample_exam, db_session):
 
 def test_calculate_percentage(sample_exam, db_session):
     """Test percentage calculation method."""
-    submission = Submission(exam_id=sample_exam.id, student_name="Test", total_score=75, max_score=100)
+    submission = Submission(
+        exam_id=sample_exam.id, student_name="Test", total_score=75, max_score=100
+    )
     db_session.add(submission)
     db_session.commit()
 

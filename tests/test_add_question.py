@@ -44,7 +44,11 @@ def test_add_written_question_success(client, sample_exam, db_session):
     """Test successfully adding a written question."""
     response = client.post(
         f"/exams/{sample_exam.id}/questions/add",
-        data={"question_text": "Explain the water cycle.", "question_type": "written", "points": 10},
+        data={
+            "question_text": "Explain the water cycle.",
+            "question_type": "written",
+            "points": 10,
+        },
         follow_redirects=True,
     )
 
@@ -164,10 +168,10 @@ def test_cannot_add_question_to_published_exam(client, db_session, sample_instru
     """Test that questions cannot be added to published exams."""
     # Create a published exam
     exam = Exam(
-    title="Published Exam",
-    description="Test Description",
-    instructions="Test instructions",
-    status="published",
+        title="Published Exam",
+        description="Test Description",
+        instructions="Test instructions",
+        status="published",
     )
     db_session.add(exam)
     db_session.commit()

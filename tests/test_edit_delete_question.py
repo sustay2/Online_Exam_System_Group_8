@@ -2,7 +2,6 @@ from online_exam.models.exam import Exam
 from online_exam.models.question import Question
 
 
-
 def test_edit_question_page_loads(client, sample_question):
     """Test that edit question page loads successfully."""
     response = client.get(f"/exams/{sample_question.exam_id}/questions/{sample_question.id}/edit")
@@ -131,17 +130,21 @@ def test_cannot_edit_published_exam_question(client, db_session, sample_instruct
     """Test that questions in published exams cannot be edited."""
     # Create a published exam
     exam = Exam(
-    title="Published Exam",
-    description="Test Description",
-    instructions="Test instructions",
-    status="published",
-    )    
+        title="Published Exam",
+        description="Test Description",
+        instructions="Test instructions",
+        status="published",
+    )
     db_session.add(exam)
     db_session.commit()
 
     # Create a question
     question = Question(
-        exam_id=exam.id, question_text="Test question", question_type="written", points=10, order_num=1
+        exam_id=exam.id,
+        question_text="Test question",
+        question_type="written",
+        points=10,
+        order_num=1,
     )
     db_session.add(question)
     db_session.commit()
@@ -166,7 +169,9 @@ def test_delete_question_success(client, sample_question, db_session):
     question_id = sample_question.id
     exam_id = sample_question.exam_id
 
-    response = client.post(f"/exams/{exam_id}/questions/{question_id}/delete", follow_redirects=True)
+    response = client.post(
+        f"/exams/{exam_id}/questions/{question_id}/delete", follow_redirects=True
+    )
 
     assert response.status_code == 200
     assert b"Question deleted successfully!" in response.data
@@ -180,23 +185,29 @@ def test_cannot_delete_published_exam_question(client, db_session, sample_instru
     """Test that questions in published exams cannot be deleted."""
     # Create a published exam
     exam = Exam(
-    title="Published Exam",
-    description="Test Description",
-    instructions="Test instructions",
-    status="published",
-)
+        title="Published Exam",
+        description="Test Description",
+        instructions="Test instructions",
+        status="published",
+    )
     db_session.add(exam)
     db_session.commit()
 
     # Create a question
     question = Question(
-        exam_id=exam.id, question_text="Test question", question_type="written", points=10, order_num=1
+        exam_id=exam.id,
+        question_text="Test question",
+        question_type="written",
+        points=10,
+        order_num=1,
     )
     db_session.add(question)
     db_session.commit()
 
     # Try to delete
-    response = client.post(f"/exams/{exam.id}/questions/{question.id}/delete", follow_redirects=True)
+    response = client.post(
+        f"/exams/{exam.id}/questions/{question.id}/delete", follow_redirects=True
+    )
 
     assert response.status_code == 200
     assert b"Cannot delete questions from a published exam" in response.data

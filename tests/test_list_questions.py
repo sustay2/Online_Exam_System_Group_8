@@ -27,7 +27,11 @@ def test_list_questions_shows_all_questions(client, sample_exam, db_session):
 
     # Create written question
     written = Question(
-        exam_id=sample_exam.id, question_text="Explain the water cycle.", question_type="written", points=10, order_num=2
+        exam_id=sample_exam.id,
+        question_text="Explain the water cycle.",
+        question_type="written",
+        points=10,
+        order_num=2,
     )
 
     db_session.add_all([mcq, written])
@@ -94,13 +98,25 @@ def test_list_questions_preserves_order(client, sample_exam, db_session):
     """Test that questions are displayed in order."""
     # Create questions out of order
     q3 = Question(
-        exam_id=sample_exam.id, question_text="Question 3", question_type="written", points=10, order_num=3
+        exam_id=sample_exam.id,
+        question_text="Question 3",
+        question_type="written",
+        points=10,
+        order_num=3,
     )
     q1 = Question(
-        exam_id=sample_exam.id, question_text="Question 1", question_type="written", points=10, order_num=1
+        exam_id=sample_exam.id,
+        question_text="Question 1",
+        question_type="written",
+        points=10,
+        order_num=1,
     )
     q2 = Question(
-        exam_id=sample_exam.id, question_text="Question 2", question_type="written", points=10, order_num=2
+        exam_id=sample_exam.id,
+        question_text="Question 2",
+        question_type="written",
+        points=10,
+        order_num=2,
     )
 
     db_session.add_all([q3, q1, q2])
@@ -129,17 +145,21 @@ def test_list_questions_hides_buttons_for_published(client, db_session, sample_i
     """Test that edit/delete buttons are hidden for published exams."""
     # Create a published exam
     exam = Exam(
-    title="Published Exam",
-    description="Test Description",
-    instructions="Test instructions",
-    status="published",
-)
+        title="Published Exam",
+        description="Test Description",
+        instructions="Test instructions",
+        status="published",
+    )
     db_session.add(exam)
     db_session.commit()
 
     # Create a question
     question = Question(
-        exam_id=exam.id, question_text="Test question", question_type="written", points=10, order_num=1
+        exam_id=exam.id,
+        question_text="Test question",
+        question_type="written",
+        points=10,
+        order_num=1,
     )
     db_session.add(question)
     db_session.commit()

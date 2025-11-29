@@ -11,16 +11,16 @@ class Submission(db.Model):  # type: ignore[misc, name-defined]
     id = db.Column(db.Integer, primary_key=True)
     exam_id = db.Column(db.Integer, db.ForeignKey("exams.id"), nullable=False)
     student_name = db.Column(db.String(200), nullable=False)  # For now, simple name field
-    
+
     # Grading info
     total_score = db.Column(db.Integer, default=0)
     max_score = db.Column(db.Integer, default=0)
     percentage = db.Column(db.Float, default=0.0)
-    
+
     # Status
     status = db.Column(db.String(20), default="pending")  # pending, graded
     graded_at = db.Column(db.DateTime, nullable=True)
-    
+
     # Timestamps
     submitted_at = db.Column(db.DateTime, default=datetime.utcnow)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -60,16 +60,16 @@ class Answer(db.Model):  # type: ignore[misc, name-defined]
     id = db.Column(db.Integer, primary_key=True)
     submission_id = db.Column(db.Integer, db.ForeignKey("submissions.id"), nullable=False)
     question_id = db.Column(db.Integer, db.ForeignKey("questions.id"), nullable=False)
-    
+
     # Answer content
     answer_text = db.Column(db.Text, nullable=True)  # For written questions
     selected_option = db.Column(db.String(1), nullable=True)  # For MCQ (A, B, C, D)
-    
+
     # Grading
     is_correct = db.Column(db.Boolean, default=False)  # Auto-graded for MCQ
     points_earned = db.Column(db.Integer, default=0)
     instructor_comment = db.Column(db.Text, nullable=True)  # For manual grading
-    
+
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

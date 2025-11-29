@@ -45,11 +45,7 @@ def db_session(app):
 def sample_instructor(app):
     """Create a sample instructor user."""
     with app.app_context():
-        instructor = User(
-            username="instructor1",
-            password="hashed_password",
-            role="instructor"
-        )
+        instructor = User(username="instructor1", password="hashed_password", role="instructor")
         db.session.add(instructor)
         db.session.commit()
         yield instructor
@@ -63,7 +59,7 @@ def sample_exam(app, sample_instructor):
             title="Test Exam",
             description="Test Description",
             instructions="Test instructions",
-            status="draft"
+            status="draft",
         )
         db.session.add(exam)
         db.session.commit()
@@ -79,11 +75,12 @@ def sample_question(app, sample_exam):
             question_text="What is 2 + 2?",
             question_type="written",
             points=10,
-            order_num=1
+            order_num=1,
         )
         db.session.add(question)
         db.session.commit()
         yield question
+
 
 @pytest.fixture
 def sample_mcq_question(app, sample_exam):
