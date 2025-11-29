@@ -1,0 +1,204 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex align-items-center">
+            <i class="bi bi-journal-bookmark text-primary fs-2 me-2"></i>
+            <h2 class="mb-0">Exam Dashboard</h2>
+        </div>
+
+        <a href="{{ url_for('exam.create_exam') }}" class="btn btn-primary px-4">
+            <i class="bi bi-plus-circle me-1"></i> Create New Exam
+        </a>
+    </div>
+
+
+    <!-- Stats Row -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-3 text-center">
+                <h5 class="fw-bold">{{ total_exams }}</h5>
+                <p class="text-muted mb-0">Total Exams</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-3 text-center">
+                <h5 class="fw-bold text-secondary">{{ total_drafts }}</h5>
+                <p class="text-muted mb-0">Draft Exams</p>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 p-3 text-center">
+                <h5 class="fw-bold text-success">{{ total_published }}</h5>
+                <p class="text-muted mb-0">Published Exams</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Filters + Search -->
+    <form method="GET" class="card shadow-sm border-0 p-3 mb-4">
+        <div class="row g-3">
+
+            <!-- Search -->
+            <div class="col-md-4">
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    name="search" 
+                    placeholder="Search exams..." 
+                    value="{{ search }}"
+                >
+            </div>
+
+            <!-- Status filter -->
+            <div class="col-md-3">
+                <select name="status" class="form-select">
+                    <option value="all" {% if status == 'all' %}selected{% endif %}>All Status</option>
+                    <option value="draft" {% if status == 'draft' %}selected{% endif %}>Draft</option>
+                    <option value="published" {% if status == 'published' %}selected{% endif %}>Published</option>
+                </select>
+            </div>
+
+            <!-- Sort -->
+            <div class="col-md-3">
+                <select name="sort" class="form-select">
+                    <option value="newest" {% if sort == 'newest' %}selected{% endif %}>
+                        Newest First
+                    </option>
+                    <option value="oldest" {% if sort == 'oldest' %}selected{% endif %}>
+                        Oldest First
+                    </option>
+                </select>
+            </div>
+
+            <!-- Submit -->
+            <div class="col-md-2 d-grid">
+                <button class="btn btn-outline-primary">
+                    <i class="bi bi-funnel me-1"></i> Apply
+                </button>
+            </div>
+
+        </div>
+    </form>
+
+
+    <!-- Exam Table -->
+    {% if exams|length == 0 %}
+    <div class="alert alert-info text-center py-4">
+        <i class="bi bi-info-circle me-2"></i>
+        No exams found with the selected filters.
+    </div>
+
+    {% else %}
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Title</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Updated</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for exam in exams %}
+                    <tr>
+                        <td class="fw-semibold">
+                            <a href="{{ url_for('exam.view_exam', exam_id=exam.id) }}" class="text-decoration-none">
+                                {{ exam.title }}
+                            </a>
+                        </td>
+
+                        <td>
+                            {% if exam.status == "draft" %}
+                                <span class="badge bg-secondary">Draft</span>
+                            {% else %}
+                                <span class="badge bg-success">Published</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-muted">
+                            {{ exam.created_at.strftime("%Y-%m-%d %H:%M") }}
+                        </td>
+
+                        <td class="text-muted">
+                            {{ exam.updated_at.strftime("%Y-%m-%d %H:%M") }}
+                        </td>
+
+                        <td class="text-end">
+                            <!-- View -->
+                            <a href="{{ url_for('exam.view_exam', exam_id=exam.id) }}"
+                            class="btn btn-sm btn-outline-primary me-1">
+                                <i class="bi bi-eye"></i>
+                            </a>
+
+                            <!-- Edit -->
+                            <a href="{{ url_for('exam.edit_exam', exam_id=exam.id) }}"
+                            class="btn btn-sm btn-outline-warning me-1">
+                                <i class="bi bi-pencil-square"></i>
+                            </a>
+
+                            <!-- Publish (only for draft) -->
+                            {% if exam.status == "draft" %}
+                            <a href="/exams/{{ exam.id }}/publish"
+                            class="btn btn-sm btn-success text-white">
+                                <i class="bi bi-upload"></i>
+                            </a>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+
+    <!-- Pagination -->
+    <nav class="mt-4">
+        <ul class="pagination justify-content-center">
+
+            <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                <a class="page-link" 
+                   href="{{ url_for('exam.list_exams', page=pagination.prev_num, search=search, status=status, sort=sort) }}">
+                   &laquo; Prev
+                </a>
+            </li>
+
+            {% for p in pagination.iter_pages() %}
+                {% if p %}
+                    <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                        <a class="page-link"
+                           href="{{ url_for('exam.list_exams', page=p, search=search, status=status, sort=sort) }}">
+                           {{ p }}
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+
+            <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                <a class="page-link" 
+                   href="{{ url_for('exam.list_exams', page=pagination.next_num, search=search, status=status, sort=sort) }}">
+                   Next &raquo;
+                </a>
+            </li>
+
+        </ul>
+    </nav>
+
+</div>
+{% endblock %}

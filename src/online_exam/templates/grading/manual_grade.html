@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Grade Submission - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="mb-4">
+        <h2>Manual Grading</h2>
+        <h4 class="text-muted">{{ exam.title }}</h4>
+        <p class="mb-0">Student: <strong>{{ submission.student_name }}</strong></p>
+        <p class="text-muted">Submitted: {{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</p>
+    </div>
+
+    <!-- Current Score Card -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Current Score</h5>
+                    <h2 class="mb-0">
+                        {{ submission.total_score }} / {{ submission.max_score }}
+                        <small class="text-muted">({{ submission.percentage }}%)</small>
+                    </h2>
+                    <p class="mb-0 mt-2">
+                        <span class="badge {% if submission.status == 'graded' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ submission.status|title }}
+                        </span>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Grading Instructions</h5>
+                    <p class="mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Grade written questions below. MCQ questions are already auto-graded.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Grading Form -->
+    <form method="POST" action="{{ url_for('grading.manual_grade', submission_id=submission.id) }}">
+        {% for answer, question in answers %}
+        <div class="card mb-3 {% if question.is_written() and answer.points_earned == 0 %}border-warning{% endif %}">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>
+                    <strong>Question {{ question.order_num }}</strong>
+                    {% if question.is_mcq() %}
+                        <span class="badge bg-primary ms-2">MCQ (Auto-Graded)</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark ms-2">Written (Manual Grading Required)</span>
+                    {% endif %}
+                </span>
+                <span class="badge bg-secondary">Max: {{ question.points }} points</span>
+            </div>
+            <div class="card-body">
+                <p class="mb-3"><strong>Question:</strong> {{ question.question_text }}</p>
+
+                {% if question.is_mcq() %}
+                    <!-- MCQ - Already Graded -->
+                    <div class="alert {% if answer.is_correct %}alert-success{% else %}alert-danger{% endif %} mb-2">
+                        <p class="mb-1"><strong>Student's Answer:</strong> {{ answer.selected_option }}</p>
+                        <p class="mb-1"><strong>Correct Answer:</strong> {{ question.correct_answer }}</p>
+                        <p class="mb-0">
+                            <strong>Points:</strong> {{ answer.points_earned }}/{{ question.points }}
+                            {% if answer.is_correct %}
+                                <span class="badge bg-success ms-2">✓ Correct</span>
+                            {% else %}
+                                <span class="badge bg-danger ms-2">✗ Incorrect</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                {% else %}
+                    <!-- Written Question - Manual Grading -->
+                    <div class="mb-3">
+                        <label class="form-label"><strong>Student's Answer:</strong></label>
+                        <div class="alert alert-light">
+                            {{ answer.answer_text if answer.answer_text else "(No answer provided)" }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="points_{{ answer.id }}" class="form-label fw-bold">
+                                Points Awarded <span class="text-danger">*</span>
+                            </label>
+                            <input 
+                                type="number" 
+                                class="form-control" 
+                                id="points_{{ answer.id }}" 
+                                name="points_{{ answer.id }}" 
+                                min="0" 
+                                max="{{ question.points }}" 
+                                value="{{ answer.points_earned }}"
+                                required
+                            >
+                            <small class="text-muted">Max: {{ question.points }}</small>
+                        </div>
+                        <div class="col-md-9">
+                            <label for="comment_{{ answer.id }}" class="form-label fw-bold">
+                                Instructor Comment (Optional)
+                            </label>
+                            <textarea 
+                                class="form-control" 
+                                id="comment_{{ answer.id }}" 
+                                name="comment_{{ answer.id }}" 
+                                rows="2" 
+                                placeholder="Provide feedback to the student..."
+                            >{{ answer.instructor_comment if answer.instructor_comment else "" }}</textarea>
+                        </div>
+                    </div>
+
+                    {% if answer.points_earned > 0 or answer.instructor_comment %}
+                    <div class="alert alert-info mt-3 mb-0">
+                        <small>
+                            <i class="bi bi-info-circle me-1"></i>
+                            Previously graded: {{ answer.points_earned }} points
+                            {% if answer.instructor_comment %}
+                                <br>Comment: "{{ answer.instructor_comment }}"
+                            {% endif %}
+                        </small>
+                    </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Submit Buttons -->
+        <div class="card bg-light">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-0">Complete Grading</h5>
+                        <small class="text-muted">Review all answers before saving</small>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('grading.list_submissions', exam_id=exam.id) }}" class="btn btn-outline-secondary me-2">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-save me-2"></i> Save Grades
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
