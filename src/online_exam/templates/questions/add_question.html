@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Add Question - {{ exam.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Add New Question</h2>
+            <p class="text-muted mb-0">Exam: {{ exam.title }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Questions
+            </a>
+        </div>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('question.add_question', exam_id=exam.id) }}">
+                <!-- Question Type -->
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Question Type <span class="text-danger">*</span></label>
+                    <div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="question_type" id="type_mcq" value="mcq" checked onchange="toggleMCQFields()">
+                            <label class="form-check-label" for="type_mcq">
+                                Multiple Choice (MCQ)
+                            </label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="question_type" id="type_written" value="written" onchange="toggleMCQFields()">
+                            <label class="form-check-label" for="type_written">
+                                Written (Open-ended)
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Question Text -->
+                <div class="mb-3">
+                    <label for="question_text" class="form-label fw-bold">Question Text <span class="text-danger">*</span></label>
+                    <textarea class="form-control" id="question_text" name="question_text" rows="4" required placeholder="Enter your question here..."></textarea>
+                </div>
+
+                <!-- Points -->
+                <div class="mb-3">
+                    <label for="points" class="form-label fw-bold">Points <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="points" name="points" min="1" max="100" value="10" required style="max-width: 150px;">
+                    <small class="text-muted">Enter the number of points this question is worth (1-100)</small>
+                </div>
+
+                <!-- MCQ Options (shown only for MCQ type) -->
+                <div id="mcq_options" class="border rounded p-3 bg-light">
+                    <h5 class="mb-3">Multiple Choice Options</h5>
+
+                    <div class="mb-3">
+                        <label for="option_a" class="form-label fw-bold">Option A <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="option_a" name="option_a" placeholder="Enter option A">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="option_b" class="form-label fw-bold">Option B <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="option_b" name="option_b" placeholder="Enter option B">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="option_c" class="form-label fw-bold">Option C <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="option_c" name="option_c" placeholder="Enter option C">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="option_d" class="form-label fw-bold">Option D <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="option_d" name="option_d" placeholder="Enter option D">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="correct_answer" class="form-label fw-bold">Correct Answer <span class="text-danger">*</span></label>
+                        <select class="form-select" id="correct_answer" name="correct_answer" style="max-width: 150px;">
+                            <option value="">Select...</option>
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                            <option value="D">D</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Submit Buttons -->
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-plus-circle me-1"></i> Add Question
+                    </button>
+                    <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-outline-secondary ms-2">
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleMCQFields() {
+    const mcqSelected = document.getElementById('type_mcq').checked;
+    const mcqOptions = document.getElementById('mcq_options');
+    const optionInputs = ['option_a', 'option_b', 'option_c', 'option_d', 'correct_answer'];
+    
+    if (mcqSelected) {
+        mcqOptions.style.display = 'block';
+        optionInputs.forEach(id => {
+            document.getElementById(id).required = true;
+        });
+    } else {
+        mcqOptions.style.display = 'none';
+        optionInputs.forEach(id => {
+            document.getElementById(id).required = false;
+        });
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleMCQFields();
+});
+</script>
+{% endblock %}

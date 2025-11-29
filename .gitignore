@@ -6,4 +6,8 @@ coverage.xml
 dist/
 .cache/
 venv/
+.venv/
+.env/
 .ruff_cache/
+migrations/
+.mypy_cache/

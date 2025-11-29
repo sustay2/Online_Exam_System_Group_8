@@ -21,3 +21,5 @@ fastapi[testclient]
 types-Flask
 types-Flask-SQLAlchemy
 types-Flask-Migrate
+cryptography
+pytest-rich
