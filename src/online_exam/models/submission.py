@@ -7,6 +7,7 @@ class Submission(db.Model):  # type: ignore[misc, name-defined]
     """Submission model for storing student exam submissions and grades."""
 
     __tablename__ = "submissions"
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
     exam_id = db.Column(db.Integer, db.ForeignKey("exams.id"), nullable=False)
@@ -56,6 +57,7 @@ class Answer(db.Model):  # type: ignore[misc, name-defined]
     """Answer model for storing individual question answers."""
 
     __tablename__ = "answers"
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
     submission_id = db.Column(db.Integer, db.ForeignKey("submissions.id"), nullable=False)

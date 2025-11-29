@@ -39,6 +39,8 @@ dev = [
   "types-Flask",
   "types-Flask-SQLAlchemy",
   "types-Flask-Migrate",
+  "cryptography",
+  "pytest-rich",
 ]
 
 [tool.ruff]

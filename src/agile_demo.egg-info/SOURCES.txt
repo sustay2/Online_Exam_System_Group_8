@@ -10,6 +10,7 @@ src/agile_demo.egg-info/top_level.txt
 src/online_exam/__init__.py
 src/online_exam/config.py
 src/online_exam/models/__init__.py
+<<<<<<< Updated upstream
 src/online_exam/models/exam.py
 <<<<<<< HEAD
 src/online_exam/models/question.py
@@ -23,11 +24,32 @@ src/online_exam/routes/exam_routes.py
 src/online_exam/routes/question_routes.py
 tests/test_add_question.py
 tests/test_app.py
+=======
+<<<<<<< Updated upstream
+src/online_exam/models/user.py
+src/online_exam/routes/__init__.py
+src/online_exam/routes/auth_routes.py
+tests/test_app.py
+=======
+src/online_exam/models/exam.py
+src/online_exam/models/question.py
+src/online_exam/models/submission.py
+src/online_exam/models/user.py
+src/online_exam/routes/__init__.py
+src/online_exam/routes/auth_routes.py
+src/online_exam/routes/exam_routes.py
+src/online_exam/routes/grading_routes.py
+src/online_exam/routes/question_routes.py
+src/online_exam/routes/schedule_routes.py
+tests/test_add_question.py
+tests/test_auto_grade_mcq.py
+>>>>>>> Stashed changes
 tests/test_create_exam.py
 tests/test_edit_delete_question.py
 tests/test_edit_exam.py
 tests/test_list_exams.py
 tests/test_list_questions.py
+<<<<<<< Updated upstream
 =======
 src/online_exam/routes/schedule_routes.py
 tests/test_create_exam.py
@@ -36,3 +58,9 @@ tests/test_list_exams.py
 tests/test_publish_exam.py
 tests/test_schedule_exam.py
 >>>>>>> 798bc27d2b75dfe878b12a720fe2beb1aa38f51c
+=======
+tests/test_manual_grade.py
+tests/test_publish_exam.py
+tests/test_schedule_exam.py
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes

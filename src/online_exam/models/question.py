@@ -7,6 +7,7 @@ class Question(db.Model):  # type: ignore[misc, name-defined]
     """Question model supporting both MCQ and written question types."""
 
     __tablename__ = "questions"
+    __table_args__ = {'extend_existing': True}
 
     id = db.Column(db.Integer, primary_key=True)
     exam_id = db.Column(db.Integer, db.ForeignKey("exams.id"), nullable=False)

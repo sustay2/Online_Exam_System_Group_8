@@ -19,14 +19,22 @@ def create_app(test_config=None):
 
     # Initialize extensions
     db.init_app(app)
+<<<<<<< Updated upstream
+    migrate.init_app(app, db)
 
-    # routes
+    # register routes
+=======
+
     from .models.exam import Exam  # noqa: F401
     from .models.user import User  # noqa: F401
+    from .models.question import Question # noqa: F401
+    from .models.submission import Submission # noqa: F401
 
     migrate.init_app(app, db)
 
     # Register blueprints
+
+>>>>>>> Stashed changes
     from .routes.auth_routes import auth_bp
     from .routes.exam_routes import exam_bp
     from .routes.schedule_routes import schedule_bp
