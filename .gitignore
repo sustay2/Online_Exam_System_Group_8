@@ -5,5 +5,4 @@ __pycache__/
 coverage.xml
 dist/
 .cache/
-venv/
 .ruff_cache/

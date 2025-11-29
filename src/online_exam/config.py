@@ -2,7 +2,7 @@ class Config:
     DB_NAME = "examdb"
     DB_USER = "examuser"
     DB_PASSWORD = "Exam123%40"
-    DB_HOST = "localhost"
+    DB_HOST = "127.0.0.1"
     DB_PORT = "3306"
 
     SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"

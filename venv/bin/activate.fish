@@ -33,7 +33,11 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
+<<<<<<< HEAD
 set -gx VIRTUAL_ENV /home/zijie/agile-demo/Online_Exam_System-Group_8/venv
+=======
+set -gx VIRTUAL_ENV /home/wlws/projects/Online_Exam_System_Group_8/venv
+>>>>>>> 798bc27d2b75dfe878b12a720fe2beb1aa38f51c
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

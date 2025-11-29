@@ -1,6 +1,7 @@
+from typing import Dict
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
-from typing import Dict
 
 app = FastAPI(title="Agile CI Demo", version="0.1.0")
 

@@ -1,4 +1,5 @@
 import pytest
+
 from online_exam import create_app, db
 from online_exam.config import Config
 from online_exam.models.exam import Exam
@@ -8,7 +9,7 @@ from online_exam.models.user import User
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = "zsqlite:///:memory:"
     WTF_CSRF_ENABLED = False
 
 
