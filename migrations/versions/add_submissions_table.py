@@ -65,7 +65,9 @@ def upgrade():
         sa.PrimaryKeyConstraint("id"),
     )
     with op.batch_alter_table("answers", schema=None) as batch_op:
-        batch_op.create_index(batch_op.f("ix_answers_submission_id"), ["submission_id"], unique=False)
+        batch_op.create_index(
+            batch_op.f("ix_answers_submission_id"), ["submission_id"], unique=False
+        )
         batch_op.create_index(batch_op.f("ix_answers_question_id"), ["question_id"], unique=False)
 
 
