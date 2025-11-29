@@ -1,4 +1,8 @@
+<<<<<<< HEAD
+#!/home/zijie/agile-demo/Online_Exam_System-Group_8/venv/bin/python3
+=======
 #!/home/wlws/projects/Online_Exam_System_Group_8/venv/bin/python
+>>>>>>> 798bc27d2b75dfe878b12a720fe2beb1aa38f51c
 import sys
 from pygments.cmdline import main
 if __name__ == '__main__':
