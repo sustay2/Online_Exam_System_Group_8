@@ -9,6 +9,11 @@
         </div>
 
         <div class="d-flex gap-2">
+            <!-- Manage Questions Button - Always visible -->
+            <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-info">
+                <i class="bi bi-list-check me-1"></i> Manage Questions
+            </a>
+
             <!-- Edit Button - Hidden if already published -->
             {% if exam.status != "published" %}
                 <a href="{{ url_for('exam.edit_exam', exam_id=exam.id) }}" class="btn btn-warning">
