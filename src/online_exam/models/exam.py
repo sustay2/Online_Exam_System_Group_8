@@ -5,7 +5,7 @@ from .. import db
 
 class Exam(db.Model):  # type: ignore[misc, name-defined]
     __tablename__ = "exams"
-    __table_args__ = {'extend_existing': True}
+    __table_args__ = {"extend_existing": True}
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(255), nullable=False)
