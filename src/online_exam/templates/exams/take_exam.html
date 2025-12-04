@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">{{ exam.title }}</h3>
+                    <small class="opacity-75">{{ exam.questions|length }} question(s)</small>
+                </div>
+                <div class="card-body p-5">
+                    {% if exam.instructions %}
+                        <div class="alert alert-info">
+                            <strong>Instructions:</strong><br>
+                            {{ exam.instructions | safe }}
+                        </div>
+                    {% endif %}
+
+                    <form method="POST" action="{{ url_for('student.submit_exam', exam_id=exam.id) }}" id="examForm">
+                        <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
+
+                        {% for question in exam.questions %}
+                            <div class="mb-5 p-4 border rounded bg-light">
+                                <p class="h5 fw-bold">{{ loop.index }}. {{ question.text }}</p>
+
+                                <!-- Placeholder for now – we'll add real answer inputs next step -->
+                                <textarea class="form-control" name="answer_{{ question.id }}" rows="4"
+                                          placeholder="Type your answer here..."></textarea>
+                            </div>
+                        {% endfor %}
+
+                        <div class="text-center mt-5">
+                            <button type="submit" class="btn btn-success btn-lg px-5">
+                                Submit Exam
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
