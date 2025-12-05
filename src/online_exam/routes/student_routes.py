@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import Blueprint, flash, redirect, render_template, request, session, url_for
 
 from online_exam import db
 from online_exam.models.exam import Exam
@@ -10,20 +10,71 @@ from online_exam.models.submission import Answer, Submission
 student_bp = Blueprint("student", __name__, url_prefix="/student")
 
 
+# ============================================================================
+# STUDENT DASHBOARD
+# ============================================================================
+
+
+@student_bp.route("/dashboard")
+def dashboard():
+    """Student dashboard showing available exams and past results."""
+    # Get user from session
+    user_id = session.get("user_id")
+    if not user_id:
+        flash("Please log in to access student dashboard.", "warning")
+        return redirect(url_for("auth.login"))
+
+    # Get student's email from session
+    from online_exam.models.user import User
+
+    user = User.query.get(user_id)
+
+    # Get all published exams
+    available_exams = (
+        Exam.query.filter_by(status="published").order_by(Exam.created_at.desc()).all()
+    )
+
+    # Get student's past submissions
+    my_submissions = Submission.query.order_by(Submission.submitted_at.desc()).limit(10).all()
+
+    # Calculate statistics
+    total_exams_taken = len(my_submissions)
+    if my_submissions:
+        avg_score = sum(s.percentage for s in my_submissions) / len(my_submissions)
+        highest_score = max(s.percentage for s in my_submissions)
+        lowest_score = min(s.percentage for s in my_submissions)
+    else:
+        avg_score = 0
+        highest_score = 0
+        lowest_score = 0
+
+    return render_template(
+        "student/dashboard.html",
+        available_exams=available_exams,
+        my_submissions=my_submissions,
+        total_exams_taken=total_exams_taken,
+        avg_score=avg_score,
+        highest_score=highest_score,
+        lowest_score=lowest_score,
+        student_name=user.name if user else "Student",
+    )
+
+
+# ============================================================================
+# TAKE EXAM
+# ============================================================================
+
+
 @student_bp.route("/exams/<int:exam_id>/take", methods=["GET"])
 def take_exam(exam_id):
     """Display exam for student to take."""
     exam = Exam.query.get_or_404(exam_id)
 
-    # Only allow published exams
     if exam.status != "published":
         flash("This exam is not available yet.", "warning")
-        return redirect(url_for("exam.list_exams"))
+        return redirect(url_for("student.dashboard"))
 
-    # Get all questions ordered by order_num
     questions = Question.query.filter_by(exam_id=exam_id).order_by(Question.order_num).all()
-
-    # Calculate total points
     total_points = sum(q.points for q in questions)
 
     return render_template(
@@ -40,26 +91,22 @@ def submit_exam(exam_id):
     """Process student exam submission."""
     questions = Question.query.filter_by(exam_id=exam_id).order_by(Question.order_num).all()
 
-    # Get student name
     student_name = request.form.get("student_name", "").strip()
     if not student_name:
         flash("Student name is required.", "danger")
         return redirect(url_for("student.take_exam", exam_id=exam_id))
 
-    # Create submission
     submission = Submission(exam_id=exam_id, student_name=student_name, status="pending")
     db.session.add(submission)
-    db.session.flush()  # Get submission ID
+    db.session.flush()
 
     total_score = 0
     max_score = 0
 
-    # Process each question
     for question in questions:
         max_score += question.points
 
         if question.is_mcq():
-            # Process MCQ answer
             selected_option = request.form.get(f"question_{question.id}", "").strip().upper()
 
             if selected_option:
@@ -76,7 +123,6 @@ def submit_exam(exam_id):
                 )
                 db.session.add(answer)
         else:
-            # Process written answer
             answer_text = request.form.get(f"question_{question.id}", "").strip()
 
             answer = Answer(
@@ -84,11 +130,10 @@ def submit_exam(exam_id):
                 question_id=question.id,
                 answer_text=answer_text,
                 is_correct=False,
-                points_earned=0,  # Needs manual grading
+                points_earned=0,
             )
             db.session.add(answer)
 
-    # Update submission with final scores
     submission.total_score = total_score
     submission.max_score = max_score
     submission.calculate_percentage()
@@ -111,7 +156,6 @@ def view_results(submission_id):
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
 
-    # Get all answers with their questions
     answers = (
         db.session.query(Answer, Question)
         .join(Question, Answer.question_id == Question.id)

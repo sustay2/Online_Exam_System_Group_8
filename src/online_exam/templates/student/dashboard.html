@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Welcome Header -->
+    <div class="mb-4">
+        <h2><i class="bi bi-mortarboard me-2"></i>Welcome back, {{ student_name }}!</h2>
+        <p class="text-muted">Ready to take your exams? Check out available exams below.</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-primary">
+                <div class="card-body">
+                    <i class="bi bi-file-earmark-text display-4 text-primary"></i>
+                    <h3 class="mt-3 mb-0">{{ available_exams|length }}</h3>
+                    <p class="text-muted mb-0">Available Exams</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <i class="bi bi-check-circle display-4 text-success"></i>
+                    <h3 class="mt-3 mb-0">{{ total_exams_taken }}</h3>
+                    <p class="text-muted mb-0">Exams Taken</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-info">
+                <div class="card-body">
+                    <i class="bi bi-graph-up display-4 text-info"></i>
+                    <h3 class="mt-3 mb-0">{{ "%.1f"|format(avg_score) }}%</h3>
+                    <p class="text-muted mb-0">Average Score</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <i class="bi bi-star display-4 text-warning"></i>
+                    <h3 class="mt-3 mb-0">{{ "%.1f"|format(highest_score) }}%</h3>
+                    <p class="text-muted mb-0">Highest Score</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Available Exams Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-clipboard-check me-2"></i>Available Exams</h5>
+        </div>
+        <div class="card-body">
+            {% if available_exams %}
+            <div class="row">
+                {% for exam in available_exams %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="bi bi-journal-text me-2"></i>{{ exam.title }}
+                            </h5>
+                            <p class="card-text text-muted">{{ exam.description or "No description provided." }}</p>
+                            
+                            {% if exam.instructions %}
+                            <div class="alert alert-light border mb-3">
+                                <small><strong>Instructions:</strong> {{ exam.instructions[:100] }}{% if exam.instructions|length > 100 %}...{% endif %}</small>
+                            </div>
+                            {% endif %}
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="bi bi-calendar me-1"></i>
+                                    Created {{ exam.created_at.strftime('%b %d, %Y') }}
+                                </small>
+                                <a href="{{ url_for('student.take_exam', exam_id=exam.id) }}" class="btn btn-primary">
+                                    <i class="bi bi-pencil-square me-1"></i> Take Exam
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h4 class="mt-3">No exams available at the moment</h4>
+                <p class="text-muted">Check back later for new exams from your instructor.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Results Section -->
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>Recent Results</h5>
+        </div>
+        <div class="card-body">
+            {% if my_submissions %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Exam</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in my_submissions %}
+                        <tr>
+                            <td>
+                                {% set exam = namespace(title='Unknown Exam') %}
+                                {% for e in available_exams %}
+                                    {% if e.id == submission.exam_id %}
+                                        {% set exam.title = e.title %}
+                                    {% endif %}
+                                {% endfor %}
+                                <strong>{{ exam.title }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ submission.total_score }}/{{ submission.max_score }}</span>
+                            </td>
+                            <td>
+                                {% if submission.percentage >= 80 %}
+                                    <span class="badge bg-success fs-6">{{ "%.1f"|format(submission.percentage) }}%</span>
+                                {% elif submission.percentage >= 50 %}
+                                    <span class="badge bg-primary fs-6">{{ "%.1f"|format(submission.percentage) }}%</span>
+                                {% else %}
+                                    <span class="badge bg-warning text-dark fs-6">{{ "%.1f"|format(submission.percentage) }}%</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ submission.submitted_at.strftime('%b %d, %Y %I:%M %p') }}</small>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('student.view_results', submission_id=submission.id) }}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye me-1"></i> View Details
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="bi bi-graph-up display-1 text-muted"></i>
+                <h4 class="mt-3">No exam results yet</h4>
+                <p class="text-muted">Take an exam to see your results here.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
