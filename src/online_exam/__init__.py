@@ -21,19 +21,19 @@ def create_app(test_config=None):
     db.init_app(app)
 
     from .models.exam import Exam  # noqa: F401
-    from .models.user import User  # noqa: F401
     from .models.password_reset_token import PasswordResetToken  # noqa: F401
     from .models.question import Question  # noqa: F401
     from .models.submission import Submission  # noqa: F401
+    from .models.user import User  # noqa: F401
 
     migrate.init_app(app, db)
 
     # Register blueprints
     from .routes.auth_routes import auth_bp
     from .routes.exam_routes import exam_bp
-    from .routes.schedule_routes import schedule_bp
-    from .routes.question_routes import question_bp
     from .routes.grading_routes import grading_bp
+    from .routes.question_routes import question_bp
+    from .routes.schedule_routes import schedule_bp
     from .routes.student_routes import student_bp
 
     app.register_blueprint(auth_bp)
