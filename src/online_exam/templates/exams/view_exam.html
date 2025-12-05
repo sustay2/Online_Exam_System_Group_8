@@ -9,7 +9,14 @@
         </div>
 
         <div class="d-flex gap-2">
-            <!-- Manage Questions Button - Always visible -->
+            <!-- Take Exam Button - Only for published exams (STUDENTS) -->
+            {% if exam.status == "published" %}
+                <a href="{{ url_for('student.take_exam', exam_id=exam.id) }}" class="btn btn-primary btn-lg">
+                    <i class="bi bi-pencil-square me-1"></i> Take Exam
+                </a>
+            {% endif %}
+
+            <!-- Manage Questions Button - Always visible (INSTRUCTORS) -->
             <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-info">
                 <i class="bi bi-list-check me-1"></i> Manage Questions
             </a>
