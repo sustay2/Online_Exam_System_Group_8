@@ -1,11 +1,4 @@
-<<<<<<< HEAD
 # src/online_exam/routes/student_routes.py
-from flask import Blueprint, render_template, flash, redirect, url_for
-from flask_login import login_required, current_user
-from ..models.exam import Exam
-from ..models.attempt import ExamAttempt
-from .. import db
-=======
 from datetime import datetime
 
 from flask import Blueprint, flash, redirect, render_template, request, url_for
@@ -14,37 +7,10 @@ from online_exam import db
 from online_exam.models.exam import Exam
 from online_exam.models.question import Question
 from online_exam.models.submission import Answer, Submission
->>>>>>> 1820d5e (take exam)
 
 student_bp = Blueprint("student", __name__, url_prefix="/student")
 
 
-<<<<<<< HEAD
-@student_bp.route("/take/<int:exam_id>", methods=["GET"])
-@login_required
-def take_exam(exam_id):
-    exam = Exam.query.get_or_404(exam_id)
-
-    # Security checks
-    if exam.status != "published":
-        flash("This exam is not available.", "danger")
-        return redirect(url_for("exam.list_exams"))
-
-    # TODO: Add time window check (start_time / end_time) later
-
-    # Create attempt if not exists
-    attempt = ExamAttempt.query.filter_by(exam_id=exam.id, student_id=current_user.id).first()
-
-    if not attempt:
-        attempt = ExamAttempt(exam_id=exam.id, student_id=current_user.id)
-        db.session.add(attempt)
-        db.session.commit()
-
-    return render_template(
-        "exams/take_exam.html",
-        exam=exam,
-        attempt=attempt,
-=======
 @student_bp.route("/exams/<int:exam_id>/take", methods=["GET"])
 def take_exam(exam_id):
     """Display exam for student to take."""
@@ -157,5 +123,4 @@ def view_results(submission_id):
 
     return render_template(
         "student/view_results.html", submission=submission, exam=exam, answers=answers
->>>>>>> 1820d5e (take exam)
     )
