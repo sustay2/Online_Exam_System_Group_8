@@ -33,12 +33,14 @@ def create_app(test_config=None):
     from .routes.schedule_routes import schedule_bp
     from .routes.question_routes import question_bp
     from .routes.grading_routes import grading_bp
+    from .routes.student_routes import student_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(exam_bp)
     app.register_blueprint(schedule_bp)
     app.register_blueprint(question_bp)
     app.register_blueprint(grading_bp)
+    app.register_blueprint(student_bp)
 
     @app.route("/")
     def home():
