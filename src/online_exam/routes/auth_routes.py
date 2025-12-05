@@ -101,3 +101,47 @@ def reset_with_token(token: str):
         return redirect(url_for("auth.login"))
 
     return render_template("auth/reset_token.html", token=token)
+
+
+@auth_bp.route("/register", methods=["GET", "POST"])
+def register():
+    if request.method == "POST":
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+        confirm_password = request.form.get("confirm_password", "")
+        role = request.form.get("role", "student").strip().lower()
+
+        if not all([name, email, password, confirm_password]):
+            flash("All fields are required.", "danger")
+            return render_template("auth/register.html", name=name, email=email, role=role)
+
+        if role not in {"student", "instructor"}:
+            flash("Invalid role selected.", "danger")
+            return render_template("auth/register.html", name=name, email=email)
+
+        if password != confirm_password:
+            flash("Passwords do not match.", "danger")
+            return render_template("auth/register.html", name=name, email=email, role=role)
+
+        if not _validate_password_complexity(password):
+            flash(
+                "Password must be at least 8 characters with an uppercase letter, a number, and a special character.",
+                "danger",
+            )
+            return render_template("auth/register.html", name=name, email=email, role=role)
+
+        if User.query.filter_by(email=email).first():
+            flash("Email is already registered.", "danger")
+            return render_template("auth/register.html", name=name, email=email, role=role)
+
+        new_user = User(username=email, name=name, email=email, role=role)
+        new_user.set_password(password)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash("Registration successful. Please log in.", "success")
+        return redirect(url_for("auth.login"))
+
+    return render_template("auth/register.html")

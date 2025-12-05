@@ -47,6 +47,7 @@ def sample_instructor(app):
     with app.app_context():
         instructor = User(
             username="instructor1",
+            name="Instructor One",
             email="instructor@example.com",
             role="instructor",
             password_hash="",
@@ -63,6 +64,7 @@ def sample_student(app):
     with app.app_context():
         student = User(
             username="student1",
+            name="Student One",
             email="student@example.com",
             role="student",
             password_hash="",
