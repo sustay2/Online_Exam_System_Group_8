@@ -1,5 +1,5 @@
 # src/online_exam/routes/student_routes.py
-from flask import Blueprint, render_template, abort, flash, redirect, url_for
+from flask import Blueprint, render_template, flash, redirect, url_for
 from flask_login import login_required, current_user
 from ..models.exam import Exam
 from ..models.attempt import ExamAttempt
@@ -21,9 +21,7 @@ def take_exam(exam_id):
     # TODO: Add time window check (start_time / end_time) later
 
     # Create attempt if not exists
-    attempt = ExamAttempt.query.filter_by(
-        exam_id=exam.id, student_id=current_user.id
-    ).first()
+    attempt = ExamAttempt.query.filter_by(exam_id=exam.id, student_id=current_user.id).first()
 
     if not attempt:
         attempt = ExamAttempt(exam_id=exam.id, student_id=current_user.id)
