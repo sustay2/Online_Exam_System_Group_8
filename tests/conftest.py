@@ -9,7 +9,7 @@ from online_exam.models.user import User
 
 class TestConfig(Config):
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = "zsqlite:///:memory:"
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
     WTF_CSRF_ENABLED = False
 
 
@@ -45,10 +45,32 @@ def db_session(app):
 def sample_instructor(app):
     """Create a sample instructor user."""
     with app.app_context():
-        instructor = User(username="instructor1", password="hashed_password", role="instructor")
+        instructor = User(
+            username="instructor1",
+            email="instructor@example.com",
+            role="instructor",
+            password_hash="",
+        )
+        instructor.set_password("Password123!")
         db.session.add(instructor)
         db.session.commit()
         yield instructor
+
+
+@pytest.fixture
+def sample_student(app):
+    """Create a sample student user."""
+    with app.app_context():
+        student = User(
+            username="student1",
+            email="student@example.com",
+            role="student",
+            password_hash="",
+        )
+        student.set_password("Password123!")
+        db.session.add(student)
+        db.session.commit()
+        yield student
 
 
 @pytest.fixture
