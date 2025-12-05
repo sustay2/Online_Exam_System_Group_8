@@ -11,9 +11,6 @@ Acceptance Criteria:
 4. Confirmation message after submission
 """
 
-import pytest
-
-from online_exam.models.exam import Exam
 from online_exam.models.question import Question
 from online_exam.models.submission import Answer, Submission
 
@@ -549,7 +546,7 @@ def test_submission_calculates_percentage_correctly(client, sample_exam, db_sess
     db_session.commit()
 
     # Submit with 1 correct, 1 incorrect
-    response = client.post(
+    client.post(
         f"/student/exams/{sample_exam.id}/submit",
         data={
             "student_name": "Percent Test",
@@ -619,7 +616,7 @@ def test_submit_exam_without_selecting_mcq(client, sample_exam, db_session):
     db_session.commit()
 
     # Submit without MCQ answer (form data missing)
-    response = client.post(
+    client.post(
         f"/student/exams/{sample_exam.id}/submit",
         data={"student_name": "No MCQ Answer"},
         follow_redirects=True,
