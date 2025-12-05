@@ -31,9 +31,7 @@ def test_valid_registration(client, app, registration_data):
 
 def test_duplicate_email_registration(client, app, registration_data):
     client.post("/register", data=registration_data)
-    duplicate_response = client.post(
-        "/register", data=registration_data, follow_redirects=True
-    )
+    duplicate_response = client.post("/register", data=registration_data, follow_redirects=True)
 
     assert b"Email is already registered." in duplicate_response.data
 

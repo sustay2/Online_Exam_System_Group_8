@@ -41,6 +41,7 @@ def db_session(app):
         yield db.session
 
 
+@pytest.fixture
 def sample_instructor(app):
     """Create a sample instructor user."""
     with app.app_context():

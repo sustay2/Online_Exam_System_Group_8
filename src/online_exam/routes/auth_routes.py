@@ -102,6 +102,7 @@ def reset_with_token(token: str):
 
     return render_template("auth/reset_token.html", token=token)
 
+
 @auth_bp.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
