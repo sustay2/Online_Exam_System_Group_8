@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, redirect, url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -22,6 +22,7 @@ def create_app(test_config=None):
 
     from .models.exam import Exam  # noqa: F401
     from .models.user import User  # noqa: F401
+    from .models.password_reset_token import PasswordResetToken  # noqa: F401
     from .models.question import Question  # noqa: F401
     from .models.submission import Submission  # noqa: F401
 
@@ -44,6 +45,6 @@ def create_app(test_config=None):
 
     @app.route("/")
     def home():
-        return "Hello, Exam System!"
+        return redirect(url_for("auth.login"))
 
     return app

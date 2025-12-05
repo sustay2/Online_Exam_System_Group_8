@@ -13,7 +13,7 @@ lint:
 
 test:
 	@echo "Running tests..."
-	pytest -q --rich
+	pytest -q --disable-warnings -vv -p no:rich.plugin
 
 ci: lint test
 	@echo "CI pipeline completed successfully!"
