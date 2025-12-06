@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from flask import Blueprint, flash, redirect, render_template, request, session, url_for
+from flask import Blueprint, flash, make_response, redirect, render_template, request, url_for
 
 from online_exam import db
 from online_exam.models.exam import Exam
@@ -91,22 +91,26 @@ def submit_exam(exam_id):
     """Process student exam submission."""
     questions = Question.query.filter_by(exam_id=exam_id).order_by(Question.order_num).all()
 
+    # Get student name
     student_name = request.form.get("student_name", "").strip()
     if not student_name:
         flash("Student name is required.", "danger")
         return redirect(url_for("student.take_exam", exam_id=exam_id))
 
+    # Create submission
     submission = Submission(exam_id=exam_id, student_name=student_name, status="pending")
     db.session.add(submission)
-    db.session.flush()
+    db.session.flush()  # Get submission ID
 
     total_score = 0
     max_score = 0
 
+    # Process each question
     for question in questions:
         max_score += question.points
 
         if question.is_mcq():
+            # Process MCQ answer
             selected_option = request.form.get(f"question_{question.id}", "").strip().upper()
 
             if selected_option:
@@ -123,6 +127,7 @@ def submit_exam(exam_id):
                 )
                 db.session.add(answer)
         else:
+            # Process written answer
             answer_text = request.form.get(f"question_{question.id}", "").strip()
 
             answer = Answer(
@@ -130,14 +135,15 @@ def submit_exam(exam_id):
                 question_id=question.id,
                 answer_text=answer_text,
                 is_correct=False,
-                points_earned=0,
+                points_earned=0,  # Needs manual grading
             )
             db.session.add(answer)
 
+    # Update submission with final scores
     submission.total_score = total_score
     submission.max_score = max_score
     submission.calculate_percentage()
-    submission.status = "graded"
+    submission.status = "graded"  # Auto-graded submissions
     submission.graded_at = datetime.utcnow()
 
     db.session.commit()
@@ -165,5 +171,64 @@ def view_results(submission_id):
     )
 
     return render_template(
-        "student/view_results.html", submission=submission, exam=exam, answers=answers
+        "student/view_results.html",
+        submission=submission,
+        exam=exam,
+        answers=answers,
     )
+
+
+@student_bp.route("/submissions/<int:submission_id>/download", methods=["GET"])
+def download_results(submission_id):
+    """Download detailed grade breakdown as CSV."""
+    submission = Submission.query.get_or_404(submission_id)
+
+    if submission.status != "graded":
+        flash("Results not available yet.", "warning")
+        return redirect(url_for("student.view_results", submission_id=submission.id))
+
+    # Get answers
+    answers = (
+        db.session.query(Answer, Question)
+        .join(Question, Answer.question_id == Question.id)
+        .filter(Answer.submission_id == submission_id)
+        .order_by(Question.order_num)
+        .all()
+    )
+
+    # CSV data
+    csv_data = [
+        [
+            "Question No",
+            "Type",
+            "Question",
+            "Your Answer",
+            "Correct Answer",
+            "Points",
+            "Instructor Comments",
+        ]
+    ]
+
+    for answer, question in answers:
+        qtype = "MCQ" if question.is_mcq() else "Written"
+        your_answer = answer.selected_option if question.is_mcq() else (answer.answer_text or "")
+        correct_answer = question.correct_answer if question.is_mcq() else ""
+        points = answer.points_earned
+        comment = answer.instructor_comment or ""
+        csv_data.append(
+            [
+                question.order_num,
+                qtype,
+                question.question_text,
+                your_answer,
+                correct_answer,
+                points,
+                comment,
+            ]
+        )
+
+    # Create response
+    output = make_response("\n".join([",".join(map(str, row)) for row in csv_data]))
+    output.headers["Content-Disposition"] = f"attachment; filename=grades_{submission.id}.csv"
+    output.headers["Content-Type"] = "text/csv"
+    return output

@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    
+
     <!-- Success Alert -->
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <h5 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Exam Submitted Successfully!</h5>
@@ -13,11 +13,18 @@
     </div>
 
     <!-- Header -->
-    <div class="text-center mb-4">
-        <h1 class="mb-3">Exam Results</h1>
-        <h2>{{ exam.title }}</h2>
-        <p class="text-muted mb-0">Student: <strong>{{ submission.student_name }}</strong></p>
-        <p class="text-muted">Submitted: {{ submission.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Exam Results</h1>
+            <h2 class="mb-0">{{ exam.title }}</h2>
+            <p class="text-muted mb-0">Student: <strong>{{ submission.student_name }}</strong></p>
+            <p class="text-muted">Submitted: {{ submission.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('student.download_results', submission_id=submission.id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-download me-1"></i> Download CSV
+            </a>
+        </div>
     </div>
 
     <!-- Score Card -->
@@ -30,7 +37,7 @@
                         {{ submission.percentage }}%
                     </h1>
                     <h4 class="mb-3">{{ submission.total_score }} out of {{ submission.max_score }} points</h4>
-                    
+
                     <!-- Performance Badge -->
                     <div class="mt-3">
                         {% if submission.percentage >= 80 %}
@@ -100,13 +107,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="alert {% if answer.is_correct %}alert-success{% else %}alert-danger{% endif %} mb-0">
-                                    <strong>Your Answer:</strong> 
+                                    <strong>Your Answer:</strong>
                                     <span class="fs-5 fw-bold">{{ answer.selected_option }}</span>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="alert alert-success mb-0">
-                                    <strong>Correct Answer:</strong> 
+                                    <strong>Correct Answer:</strong>
                                     <span class="fs-5 fw-bold">{{ question.correct_answer }}</span>
                                 </div>
                             </div>

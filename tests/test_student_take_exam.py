@@ -14,7 +14,6 @@ Acceptance Criteria:
 from online_exam.models.question import Question
 from online_exam.models.submission import Answer, Submission
 
-
 # ============================================================================
 # STORY 3 - TEST 1: Display Take Exam Page
 # ============================================================================

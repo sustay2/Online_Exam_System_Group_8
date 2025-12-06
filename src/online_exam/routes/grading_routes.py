@@ -32,9 +32,7 @@ def submit_exam(exam_id):
             max_score += question.points
 
             if question.is_mcq():
-                # Get selected option
                 selected_option = request.form.get(f"question_{question.id}")
-
                 if selected_option:
                     selected_option = selected_option.upper()
                     is_correct = selected_option == question.correct_answer
@@ -50,18 +48,17 @@ def submit_exam(exam_id):
                     )
                     db.session.add(answer)
             else:
-                # Written question - save answer text, no auto-grading
                 answer_text = request.form.get(f"question_{question.id}", "")
                 answer = Answer(
                     submission_id=submission.id,
                     question_id=question.id,
                     answer_text=answer_text,
                     is_correct=False,
-                    points_earned=0,  # Will be manually graded
+                    points_earned=0,
                 )
                 db.session.add(answer)
 
-        # Update submission with scores
+        # Update submission
         submission.total_score = total_score
         submission.max_score = max_score
         submission.calculate_percentage()
@@ -85,7 +82,6 @@ def view_results(submission_id):
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
 
-    # Get all answers with their questions
     answers = (
         db.session.query(Answer, Question)
         .join(Question, Answer.question_id == Question.id)
@@ -116,7 +112,6 @@ def manual_grade(submission_id):
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
 
-    # Get all answers with their questions
     answers = (
         db.session.query(Answer, Question)
         .join(Question, Answer.question_id == Question.id)
@@ -129,37 +124,27 @@ def manual_grade(submission_id):
         total_score = 0
         max_score = 0
 
-        # Process grading for each question
         for answer, question in answers:
             max_score += question.points
 
             if question.is_mcq():
-                # MCQ already graded, just add to total
                 total_score += answer.points_earned
             else:
-                # Manual grading for written questions
                 points_str = request.form.get(f"points_{answer.id}", "0")
                 try:
                     points = int(points_str)
                 except ValueError:
                     points = 0
 
-                # Validate points don't exceed max
-                if points > question.points:
-                    points = question.points
-                if points < 0:
-                    points = 0
-
+                points = max(0, min(points, question.points))
                 comment = request.form.get(f"comment_{answer.id}", "").strip()
 
-                # Update answer
                 answer.points_earned = points
                 answer.instructor_comment = comment
                 answer.is_correct = points == question.points
 
                 total_score += points
 
-        # Update submission
         submission.total_score = total_score
         submission.max_score = max_score
         submission.calculate_percentage()
@@ -177,3 +162,23 @@ def manual_grade(submission_id):
     return render_template(
         "grading/manual_grade.html", submission=submission, exam=exam, answers=answers
     )
+
+
+@grading_bp.route("/<int:exam_id>/publish_grades", methods=["POST"])
+def publish_grades(exam_id: int):
+    """Publish grades for all graded submissions of an exam."""
+    exam = Exam.query.get_or_404(exam_id)
+
+    graded_submissions = Submission.query.filter_by(exam_id=exam.id, status="graded").all()
+
+    if not graded_submissions:
+        flash("No graded submissions to publish.", "warning")
+        return redirect(url_for("exam.view_exam", exam_id=exam.id))
+
+    for submission in graded_submissions:
+        submission.status = "published"
+
+    db.session.commit()
+    flash("Grades published successfully", "success")  # <--- changed to match test
+
+    return redirect(url_for("exam.view_exam", exam_id=exam.id))
