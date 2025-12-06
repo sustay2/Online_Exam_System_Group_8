@@ -178,11 +178,11 @@ def export_exam_results(exam_id):
             )
             percentage_cell.font = Font(color="9C0006", bold=True)
 
-        # Status with color coding
         status = "PASS" if submission.percentage >= 50 else "FAIL"
         status_cell = ws.cell(row=row, column=6, value=status)
         status_cell.alignment = Alignment(horizontal="center")
         status_cell.font = Font(bold=True)
+
         if status == "PASS":
             status_cell.fill = PatternFill(
                 start_color="C6EFCE", end_color="C6EFCE", fill_type="solid"
@@ -194,8 +194,14 @@ def export_exam_results(exam_id):
             )
             status_cell.font = Font(color="9C0006", bold=True)
 
-        # Submitted date
-        ws.cell(row=row, column=7, value=submission.submitted_at.strftime("%Y-%m-%d %H:%M:%S"))
+        # SAFE submitted_at fallback
+        submitted = (
+            submission.submitted_at.strftime("%Y-%m-%d %H:%M:%S")
+            if submission.submitted_at
+            else "N/A"
+        )
+
+        ws.cell(row=row, column=7, value=submitted)
 
     # Adjust column widths
     ws.column_dimensions["A"].width = 8

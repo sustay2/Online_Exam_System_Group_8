@@ -1,6 +1,15 @@
 from datetime import datetime
 
-from flask import Blueprint, flash, make_response, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    flash,
+    make_response,
+    redirect,
+    render_template,
+    request,
+    url_for,
+    session,
+)
 
 from online_exam import db
 from online_exam.models.exam import Exam
@@ -162,6 +171,12 @@ def view_results(submission_id):
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
 
+    # If results are not graded -> redirect to dashboard with flash
+    if submission.status != "graded":
+        flash("Results not available yet", "warning")
+        return redirect(url_for("student.dashboard"))
+
+    # Now show results page safely
     answers = (
         db.session.query(Answer, Question)
         .join(Question, Answer.question_id == Question.id)
@@ -185,7 +200,7 @@ def download_results(submission_id):
 
     if submission.status != "graded":
         flash("Results not available yet.", "warning")
-        return redirect(url_for("student.view_results", submission_id=submission.id))
+        return redirect(url_for("student.dashboard"))
 
     # Get answers
     answers = (
