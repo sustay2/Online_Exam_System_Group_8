@@ -21,6 +21,10 @@
                 <i class="bi bi-list-check me-1"></i> Manage Questions
             </a>
 
+            <a href="{{ url_for('analytics.exam_report', exam_id=exam.id) }}" class="btn btn-secondary">
+                <i class="bi bi-graph-up me-1"></i> Analytics
+            </a>
+
             <!-- Edit Button - Hidden if already published -->
             {% if exam.status != "published" %}
                 <a href="{{ url_for('exam.edit_exam', exam_id=exam.id) }}" class="btn btn-warning">
