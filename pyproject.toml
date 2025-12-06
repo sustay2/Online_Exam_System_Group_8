@@ -41,6 +41,7 @@ dev = [
   "types-Flask-Migrate",
   "cryptography",
   "pytest-rich",
+  "openpyxl",
 ]
 
 [tool.ruff]
