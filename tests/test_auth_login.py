@@ -1,15 +1,29 @@
 from online_exam.models.user import User
 
 
-def test_valid_login_redirects_to_exams(client, sample_student):
+def test_valid_login_redirects_to_student_dashboard(client, sample_student):
+    """Test that valid student login redirects to student dashboard."""
     response = client.post(
         "/login",
         data={"email": "student@example.com", "password": "Password123!"},
         follow_redirects=True,
     )
 
+    assert response.request.path == "/student/dashboard"
+    assert response.status_code == 200
+    assert b"Student Dashboard" in response.data or b"Available Exams" in response.data
+
+
+def test_valid_instructor_login_redirects_to_exams(client, sample_instructor):
+    """Test that valid instructor login redirects to exams list."""
+    response = client.post(
+        "/login",
+        data={"email": "instructor@example.com", "password": "Password123!"},
+        follow_redirects=True,
+    )
+
     assert response.request.path == "/exams"
-    assert b"Logged in successfully" in response.data
+    assert response.status_code == 200
 
 
 def test_invalid_login_shows_error(client, sample_student):

@@ -36,8 +36,13 @@ def login():
 
         session["user_id"] = user.id
         session["user_role"] = user.role
-        flash("Logged in successfully.", "success")
-        return redirect(url_for("exam.list_exams"))
+        flash(f"Welcome back, {user.name}!", "success")
+
+        # ROLE-BASED REDIRECT
+        if user.role == "student":
+            return redirect(url_for("student.dashboard"))
+        else:  # instructor
+            return redirect(url_for("exam.list_exams"))
 
     return render_template("auth/login.html")
 
