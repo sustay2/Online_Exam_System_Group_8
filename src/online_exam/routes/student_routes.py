@@ -11,10 +11,10 @@ from flask import (
     session,
 )
 
-from online_exam import db
-from online_exam.models.exam import Exam
-from online_exam.models.question import Question
-from online_exam.models.submission import Answer, Submission
+from .. import db
+from ..models.exam import Exam
+from ..models.question import Question
+from ..models.submission import Answer, Submission
 
 student_bp = Blueprint("student", __name__, url_prefix="/student")
 
@@ -34,7 +34,7 @@ def dashboard():
         return redirect(url_for("auth.login"))
 
     # Get student's email from session
-    from online_exam.models.user import User
+    from ..models.user import User
 
     user = User.query.get(user_id)
 

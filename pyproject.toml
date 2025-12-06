@@ -53,8 +53,24 @@ line-length = 100
 target-version = ['py311']
 
 [tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-q"
+minversion = "7.0"
+testpaths = [
+    "tests",
+]
+
+addopts = """
+    --disable-warnings
+    --maxfail=1
+    -vv
+    -s
+    --color=yes
+    --tb=short
+"""
+
+# Allows rich output in GitHub Actions too
+filterwarnings = [
+    "ignore::DeprecationWarning",
+]
 
 [tool.mypy]
 python_version = "3.11"

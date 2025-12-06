@@ -149,7 +149,7 @@
 
                             <!-- Publish (only for draft) -->
                             {% if exam.status == "draft" %}
-                            <a href="/exams/{{ exam.id }}/publish"
+                            <a href="{{ url_for('exam.publish_exam', exam_id=exam.id) }}"
                             class="btn btn-sm btn-success text-white">
                                 <i class="bi bi-upload"></i>
                             </a>

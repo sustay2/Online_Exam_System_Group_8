@@ -20,11 +20,14 @@ def create_app(test_config=None):
     # Initialize extensions
     db.init_app(app)
 
-    from .models.exam import Exam  # noqa: F401
-    from .models.password_reset_token import PasswordResetToken  # noqa: F401
-    from .models.question import Question  # noqa: F401
-    from .models.submission import Submission  # noqa: F401
-    from .models.user import User  # noqa: F401
+    from .models import (  # noqa: F401
+        Answer,
+        Exam,
+        PasswordResetToken,
+        Question,
+        Submission,
+        User,
+    )
 
     migrate.init_app(app, db)
 

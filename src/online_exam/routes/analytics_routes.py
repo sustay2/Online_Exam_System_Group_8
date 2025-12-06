@@ -3,8 +3,8 @@ from io import BytesIO
 
 from flask import Blueprint, render_template, send_file
 
-from online_exam.models.exam import Exam
-from online_exam.models.submission import Submission
+from ..models.exam import Exam
+from ..models.submission import Submission
 
 analytics_bp = Blueprint("analytics", __name__, url_prefix="/analytics")
 

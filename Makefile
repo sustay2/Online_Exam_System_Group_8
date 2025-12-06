@@ -13,7 +13,7 @@ lint:
 
 test:
 	@echo "Running tests..."
-	pytest -vv -s
+	pytest
 
 ci: lint test
 	@echo "CI pipeline completed successfully!"
