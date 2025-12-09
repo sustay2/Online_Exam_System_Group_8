@@ -20,7 +20,7 @@
 
     <!-- Exam Info Cards -->
     <div class="row mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Total Questions</h5>
@@ -28,7 +28,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Total Points</h5>
@@ -36,11 +36,41 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card text-center">
                 <div class="card-body">
                     <h5 class="card-title text-muted">Status</h5>
                     <h2 class="mb-0"><span class="badge bg-success">In Progress</span></h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-warning">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Flagged</h5>
+                    <h2 class="mb-0 text-warning" id="flaggedCount">0</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Panel (Collapsible) -->
+    <div class="card mb-4 border-warning">
+        <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center" 
+             style="cursor: pointer;" 
+             data-bs-toggle="collapse" 
+             data-bs-target="#reviewPanel">
+            <h5 class="mb-0">
+                <i class="bi bi-flag-fill me-2"></i>
+                Flagged Questions for Review 
+                <span class="badge bg-dark ms-2" id="flaggedBadge">0</span>
+            </h5>
+            <i class="bi bi-chevron-down"></i>
+        </div>
+        <div class="collapse" id="reviewPanel">
+            <div class="card-body">
+                <div id="flaggedList" class="d-flex flex-wrap gap-2">
+                    <p class="text-muted mb-0">No questions flagged yet. Click "Mark for Review" on any question to flag it.</p>
                 </div>
             </div>
         </div>
@@ -74,7 +104,7 @@
 
         <!-- Questions -->
         {% for question in questions %}
-        <div class="card mb-3 question-card">
+        <div class="card mb-3 question-card" id="question-{{ question.id }}" data-question-id="{{ question.id }}">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span>
                     <strong>Question {{ question.order_num }}</strong>
@@ -83,8 +113,22 @@
                     {% else %}
                         <span class="badge bg-warning text-dark ms-2">Written Answer</span>
                     {% endif %}
+                    <span class="badge bg-danger ms-2 flag-indicator" style="display: none;">
+                        <i class="bi bi-flag-fill"></i> Flagged
+                    </span>
                 </span>
-                <span class="badge bg-success">{{ question.points }} points</span>
+                <div class="d-flex gap-2 align-items-center">
+                    <span class="badge bg-success">{{ question.points }} points</span>
+                    <button 
+                        type="button" 
+                        class="btn btn-sm btn-outline-warning flag-btn" 
+                        data-question-id="{{ question.id }}"
+                        data-question-num="{{ question.order_num }}"
+                        title="Mark for Review"
+                    >
+                        <i class="bi bi-flag"></i> Mark for Review
+                    </button>
+                </div>
             </div>
             <div class="card-body">
                 <p class="mb-3 fw-semibold">{{ question.question_text }}</p>
@@ -170,11 +214,15 @@
                     <div>
                         <h5 class="mb-1">Ready to submit?</h5>
                         <small class="text-muted">Make sure you've answered all questions</small>
+                        <div id="flaggedWarning" class="text-warning mt-2" style="display: none;">
+                            <i class="bi bi-exclamation-triangle me-1"></i>
+                            <strong>You have <span id="finalFlaggedCount">0</span> flagged question(s)</strong>
+                        </div>
                     </div>
                     <div>
-                        <a href="{{ url_for('exam.view_exam', exam_id=exam.id) }}" class="btn btn-outline-secondary me-2">
+                        <button type="button" class="btn btn-outline-secondary me-2" onclick="window.history.back()">
                             <i class="bi bi-x-circle me-1"></i> Cancel
-                        </a>
+                        </button>
                         <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
                             <i class="bi bi-check-circle me-2"></i> Submit Exam
                         </button>
@@ -186,41 +234,172 @@
     </form>
 </div>
 
-<!-- JavaScript for Leave Warning & Auto-save -->
+<!-- JavaScript for Question Flagging & Auto-save -->
 <script type="text/javascript">
 (function() {
-    // ✅ FIX: Use tojson filter to safely pass exam.id to JavaScript
     var examId = '{{ exam.id | tojson }}'.replace(/["']/g, '').trim() || 0;
     var formSubmitted = false;
     var form = document.getElementById('examForm');
     var submitBtn = document.getElementById('submitBtn');
     
-    // Auto-save student name to localStorage
+    // ========================================================================
+    // QUESTION FLAGGING SYSTEM
+    // ========================================================================
+    
+    var flaggedQuestions = new Set();
+    var flagStorageKey = 'exam_' + examId + '_flagged';
+    
+    // Load flagged questions from localStorage
+    function loadFlags() {
+        try {
+            var stored = localStorage.getItem(flagStorageKey);
+            if (stored) {
+                flaggedQuestions = new Set(JSON.parse(stored));
+                // Apply flags to UI
+                flaggedQuestions.forEach(function(questionId) {
+                    applyFlagToQuestion(questionId);
+                });
+                updateFlaggedPanel();
+            }
+        } catch (e) {
+            console.error('Error loading flags:', e);
+        }
+    }
+    
+    // Save flagged questions to localStorage
+    function saveFlags() {
+        try {
+            localStorage.setItem(flagStorageKey, JSON.stringify(Array.from(flaggedQuestions)));
+        } catch (e) {
+            console.error('Error saving flags:', e);
+        }
+    }
+    
+    // Apply flag styling to question card
+    function applyFlagToQuestion(questionId) {
+        var card = document.querySelector('[data-question-id="' + questionId + '"]');
+        if (card) {
+            card.classList.add('border-warning', 'border-3');
+            var indicator = card.querySelector('.flag-indicator');
+            if (indicator) indicator.style.display = 'inline';
+            
+            var btn = card.querySelector('.flag-btn');
+            if (btn) {
+                btn.classList.remove('btn-outline-warning');
+                btn.classList.add('btn-warning');
+                btn.innerHTML = '<i class="bi bi-flag-fill"></i> Flagged';
+            }
+        }
+    }
+    
+    // Remove flag styling from question card
+    function removeFlagFromQuestion(questionId) {
+        var card = document.querySelector('[data-question-id="' + questionId + '"]');
+        if (card) {
+            card.classList.remove('border-warning', 'border-3');
+            var indicator = card.querySelector('.flag-indicator');
+            if (indicator) indicator.style.display = 'none';
+            
+            var btn = card.querySelector('.flag-btn');
+            if (btn) {
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-outline-warning');
+                btn.innerHTML = '<i class="bi bi-flag"></i> Mark for Review';
+            }
+        }
+    }
+    
+    // Toggle flag on question
+    function toggleFlag(questionId, questionNum) {
+        if (flaggedQuestions.has(questionId)) {
+            // Unflag
+            flaggedQuestions.delete(questionId);
+            removeFlagFromQuestion(questionId);
+        } else {
+            // Flag
+            flaggedQuestions.add(questionId);
+            applyFlagToQuestion(questionId);
+        }
+        saveFlags();
+        updateFlaggedPanel();
+    }
+    
+    // Update the flagged questions panel
+    function updateFlaggedPanel() {
+        var count = flaggedQuestions.size;
+        
+        // Update counters
+        document.getElementById('flaggedCount').textContent = count;
+        document.getElementById('flaggedBadge').textContent = count;
+        document.getElementById('finalFlaggedCount').textContent = count;
+        
+        // Show/hide warning
+        var warning = document.getElementById('flaggedWarning');
+        if (count > 0) {
+            warning.style.display = 'block';
+        } else {
+            warning.style.display = 'none';
+        }
+        
+        // Update panel content
+        var flaggedList = document.getElementById('flaggedList');
+        
+        if (count === 0) {
+            flaggedList.innerHTML = '<p class="text-muted mb-0">No questions flagged yet. Click "Mark for Review" on any question to flag it.</p>';
+        } else {
+            var html = '';
+            flaggedQuestions.forEach(function(questionId) {
+                var btn = document.querySelector('.flag-btn[data-question-id="' + questionId + '"]');
+                var questionNum = btn ? btn.getAttribute('data-question-num') : questionId;
+                
+                html += '<button type="button" class="btn btn-warning btn-sm" onclick="document.getElementById(\'question-' + questionId + '\').scrollIntoView({behavior: \'smooth\', block: \'center\'});">' +
+                        '<i class="bi bi-flag-fill me-1"></i> Question ' + questionNum +
+                        '</button>';
+            });
+            flaggedList.innerHTML = html;
+        }
+    }
+    
+    // Attach event listeners to all flag buttons
+    document.querySelectorAll('.flag-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            var questionId = this.getAttribute('data-question-id');
+            var questionNum = this.getAttribute('data-question-num');
+            toggleFlag(questionId, questionNum);
+        });
+    });
+    
+    // Load flags on page load
+    loadFlags();
+    
+    // ========================================================================
+    // AUTO-SAVE STUDENT NAME
+    // ========================================================================
+    
     var studentNameInput = document.getElementById('student_name');
     var studentNameKey = 'exam_' + examId + '_student_name';
     
-    // Load saved student name
     if (localStorage.getItem(studentNameKey)) {
         studentNameInput.value = localStorage.getItem(studentNameKey);
     }
     
-    // Save student name on input
     studentNameInput.addEventListener('input', function() {
         localStorage.setItem(studentNameKey, this.value);
     });
     
-    // Auto-save written answers to localStorage
+    // ========================================================================
+    // AUTO-SAVE WRITTEN ANSWERS
+    // ========================================================================
+    
     var writtenAnswers = document.querySelectorAll('.written-answer');
     writtenAnswers.forEach(function(textarea) {
         var questionId = textarea.dataset.questionId;
         var storageKey = 'exam_' + examId + '_question_' + questionId;
         
-        // Load saved answer
         if (localStorage.getItem(storageKey)) {
             textarea.value = localStorage.getItem(storageKey);
         }
         
-        // Save on input with debounce
         var saveTimeout;
         textarea.addEventListener('input', function() {
             clearTimeout(saveTimeout);
@@ -228,7 +407,6 @@
             saveTimeout = setTimeout(function() {
                 localStorage.setItem(storageKey, currentTextarea.value);
                 
-                // Show save indicator
                 var indicator = currentTextarea.parentElement.querySelector('.auto-save-indicator');
                 var text = currentTextarea.parentElement.querySelector('.auto-save-text');
                 indicator.style.display = 'inline';
@@ -243,7 +421,10 @@
         });
     });
     
-    // Leave page warning
+    // ========================================================================
+    // FORM SUBMISSION
+    // ========================================================================
+    
     window.addEventListener('beforeunload', function(e) {
         if (!formSubmitted) {
             e.preventDefault();
@@ -252,9 +433,7 @@
         }
     });
     
-    // Mark form as submitted and clear localStorage
     form.addEventListener('submit', function(e) {
-        // Prevent double-submit
         if (submitBtn.disabled) {
             e.preventDefault();
             return false;
@@ -264,9 +443,10 @@
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
         
-        // Clear localStorage after successful submit
+        // Clear all localStorage (including flags) after submission
         setTimeout(function() {
             localStorage.removeItem(studentNameKey);
+            localStorage.removeItem(flagStorageKey);
             writtenAnswers.forEach(function(textarea) {
                 var questionId = textarea.dataset.questionId;
                 localStorage.removeItem('exam_' + examId + '_question_' + questionId);
@@ -275,4 +455,5 @@
     });
 })();
 </script>
+
 {% endblock %}
