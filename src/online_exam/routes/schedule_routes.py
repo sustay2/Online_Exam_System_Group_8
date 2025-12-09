@@ -3,7 +3,6 @@ from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 
 from .. import db
-
 from ..models.exam import Exam
 
 schedule_bp = Blueprint("schedule", __name__, url_prefix="/exams")

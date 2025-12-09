@@ -1,9 +1,12 @@
+from datetime import datetime
+
 import pytest
 
 from online_exam import create_app, db
 from online_exam.config import Config
 from online_exam.models.exam import Exam
 from online_exam.models.question import Question
+from online_exam.models.submission import Submission
 from online_exam.models.user import User
 
 
@@ -15,6 +18,7 @@ class TestConfig(Config):
 
 @pytest.fixture
 def app():
+    """Create and configure a new app instance for each test."""
     app = create_app(
         {
             "TESTING": True,
@@ -31,6 +35,7 @@ def app():
 
 @pytest.fixture
 def client(app):
+    """A test client for the app."""
     return app.test_client()
 
 
@@ -92,7 +97,7 @@ def sample_exam(app, sample_instructor):
 
 @pytest.fixture
 def sample_question(app, sample_exam):
-    """Create a sample question."""
+    """Create a sample written question."""
     with app.app_context():
         question = Question(
             exam_id=sample_exam.id,
@@ -125,3 +130,21 @@ def sample_mcq_question(app, sample_exam):
         db.session.add(question)
         db.session.commit()
         yield question
+
+
+@pytest.fixture
+def sample_submission(app, sample_exam, sample_student):
+    """Create a sample submission for testing analytics/reporting."""
+    with app.app_context():
+        submission = Submission(
+            exam_id=sample_exam.id,
+            student_name=sample_student.name,
+            total_score=85,
+            max_score=100,
+            percentage=85.0,
+            status="graded",
+            submitted_at=datetime.utcnow(),
+        )
+        db.session.add(submission)
+        db.session.commit()
+        yield submission
