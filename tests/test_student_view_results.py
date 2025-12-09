@@ -79,4 +79,4 @@ def test_view_results_not_published(client, db_session):
 
     response = client.get(f"/student/submissions/{submission.id}/results", follow_redirects=True)
     assert response.status_code == 200
-    assert b"Results not available yet" in response.data
+    assert b"Grading In Progress" in response.data or b"pending" in response.data.lower()

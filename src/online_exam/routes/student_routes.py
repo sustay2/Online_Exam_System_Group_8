@@ -97,7 +97,7 @@ def take_exam(exam_id):
 
 @student_bp.route("/exams/<int:exam_id>/submit", methods=["POST"])
 def submit_exam(exam_id):
-    """Process student exam submission."""
+    """Process student exam submission with smart status logic."""
     questions = Question.query.filter_by(exam_id=exam_id).order_by(Question.order_num).all()
 
     # Get student name
@@ -113,13 +113,14 @@ def submit_exam(exam_id):
 
     total_score = 0
     max_score = 0
+    has_written_questions = False
 
     # Process each question
     for question in questions:
         max_score += question.points
 
         if question.is_mcq():
-            # Process MCQ answer
+            # Process MCQ answer (auto-graded)
             selected_option = request.form.get(f"question_{question.id}", "").strip().upper()
 
             if selected_option:
@@ -136,7 +137,8 @@ def submit_exam(exam_id):
                 )
                 db.session.add(answer)
         else:
-            # Process written answer
+            # Process written answer (needs manual grading)
+            has_written_questions = True
             answer_text = request.form.get(f"question_{question.id}", "").strip()
 
             answer = Answer(
@@ -152,16 +154,29 @@ def submit_exam(exam_id):
     submission.total_score = total_score
     submission.max_score = max_score
     submission.calculate_percentage()
-    submission.status = "graded"  # Auto-graded submissions
-    submission.graded_at = datetime.utcnow()
+
+    # SMART STATUS LOGIC
+    # If exam has written questions → status = "pending" (needs instructor grading)
+    # If exam has only MCQ questions → status = "graded" (auto-graded, no manual work needed)
+    if has_written_questions:
+        submission.status = "pending"
+        submission.graded_at = None
+        flash_message = (
+            f"✅ Exam submitted successfully! "
+            f"Your MCQ score: {total_score}/{max_score}. "
+            f"Written questions are pending instructor grading."
+        )
+    else:
+        submission.status = "graded"
+        submission.graded_at = datetime.utcnow()
+        flash_message = (
+            f"✅ Exam submitted successfully! "
+            f"Your final score: {total_score}/{max_score} ({submission.percentage}%)"
+        )
 
     db.session.commit()
 
-    flash(
-        f"✅ Exam submitted successfully! Your score: {total_score}/{max_score} ({submission.percentage}%)",
-        "success",
-    )
-
+    flash(flash_message, "success")
     return redirect(url_for("student.view_results", submission_id=submission.id))
 
 
@@ -171,12 +186,8 @@ def view_results(submission_id):
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
 
-    # If results are not graded -> redirect to dashboard with flash
-    if submission.status != "graded":
-        flash("Results not available yet", "warning")
-        return redirect(url_for("student.dashboard"))
-
-    # Now show results page safely
+    # If results are pending grading -> show partial results
+    # If results are graded -> show full results
     answers = (
         db.session.query(Answer, Question)
         .join(Question, Answer.question_id == Question.id)
@@ -198,8 +209,11 @@ def download_results(submission_id):
     """Download detailed grade breakdown as CSV."""
     submission = Submission.query.get_or_404(submission_id)
 
-    if submission.status != "graded":
-        flash("Results not available yet.", "warning")
+    if submission.status == "pending":
+        flash(
+            "Results not fully available yet. Some questions are pending instructor grading.",
+            "warning",
+        )
         return redirect(url_for("student.dashboard"))
 
     # Get answers

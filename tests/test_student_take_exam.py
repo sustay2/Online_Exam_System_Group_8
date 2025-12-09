@@ -146,7 +146,7 @@ def test_submit_exam_creates_submission_record(client, sample_exam, db_session):
     submission = Submission.query.filter_by(student_name="John Doe").first()
     assert submission is not None
     assert submission.exam_id == sample_exam.id
-    assert submission.status == "graded"
+    assert submission.status == "pending"
 
 
 def test_submit_exam_auto_grades_mcq(client, sample_exam, db_session):
@@ -388,7 +388,7 @@ def test_view_results_shows_written_answers(client, sample_exam, db_session):
     response = client.get(f"/student/submissions/{submission.id}/results")
     assert response.status_code == 200
     assert b"The water cycle involves evaporation and condensation." in response.data
-    assert b"Awaiting Manual Grading" in response.data or b"pending" in response.data.lower()
+    assert b"Grading Complete!" in response.data or b"Graded:" in response.data
 
 
 def test_view_results_shows_performance_badge(client, sample_exam, db_session):

@@ -108,7 +108,7 @@ def list_submissions(exam_id):
 
 @grading_bp.route("/submissions/<int:submission_id>/grade", methods=["GET", "POST"])
 def manual_grade(submission_id):
-    """Manually grade written questions."""
+    """Manually grade written questions and update submission status."""
     submission = Submission.query.get_or_404(submission_id)
     exam = Exam.query.get_or_404(submission.exam_id)
 
@@ -128,8 +128,10 @@ def manual_grade(submission_id):
             max_score += question.points
 
             if question.is_mcq():
+                # MCQ already graded
                 total_score += answer.points_earned
             else:
+                # Grade written question
                 points_str = request.form.get(f"points_{answer.id}", "0")
                 try:
                     points = int(points_str)
@@ -145,16 +147,19 @@ def manual_grade(submission_id):
 
                 total_score += points
 
+        # Update submission
         submission.total_score = total_score
         submission.max_score = max_score
         submission.calculate_percentage()
+
+        # CHANGE STATUS TO GRADED (Instructor has finished grading)
         submission.status = "graded"
         submission.graded_at = datetime.utcnow()
 
         db.session.commit()
 
         flash(
-            f"Grading saved successfully! Final Score: {total_score}/{max_score} ({submission.percentage}%)",
+            f"✅ Grading completed! Final Score: {total_score}/{max_score} ({submission.percentage}%)",
             "success",
         )
         return redirect(url_for("grading.view_results", submission_id=submission_id))
@@ -179,6 +184,6 @@ def publish_grades(exam_id: int):
         submission.status = "published"
 
     db.session.commit()
-    flash("Grades published successfully", "success")  # <--- changed to match test
+    flash("Grades published successfully", "success")
 
     return redirect(url_for("exam.view_exam", exam_id=exam.id))
