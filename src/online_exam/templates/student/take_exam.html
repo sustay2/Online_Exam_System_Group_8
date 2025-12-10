@@ -59,9 +59,9 @@
                     class="form-control" 
                     id="student_name" 
                     name="student_name" 
+                    {% if preview_mode %}disabled{% endif %}
                     required 
-                    placeholder="Enter your full name"
-                    autocomplete="name"
+
                 >
             </div>
         </div>
@@ -86,13 +86,13 @@
                 <div class="ms-3">
                     {% for option, label in [('A', question.option_a), ('B', question.option_b), ('C', question.option_c), ('D', question.option_d)] %}
                     <div class="form-check mb-2">
-                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" id="q{{ question.id }}_{{ option }}" value="{{ option }}" required>
+                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" {% if preview_mode %}disabled{% endif %}id="q{{ question.id }}_{{ option }}" value="{{ option }}" required>
                         <label class="form-check-label" for="q{{ question.id }}_{{ option }}"><strong>{{ option }}.</strong> {{ label }}</label>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <textarea class="form-control written-answer" name="question_{{ question.id }}" rows="6" placeholder="Type your answer here..."></textarea>
+                <textarea class="form-control written-answer" {% if preview_mode %}disabled{% endif %} name="question_{{ question.id }}" rows="6" placeholder="Type your answer here..."></textarea>
                 {% endif %}
             </div>
         </div>
@@ -108,9 +108,15 @@
                     <a href="{{ url_for('exam.view_exam', exam_id=exam.id) }}" class="btn btn-outline-secondary me-2">
                         <i class="bi bi-x-circle me-1"></i> Cancel
                     </a>
+                    {% if not preview_mode %}
                     <button type="submit" class="btn btn-success btn-lg" id="submitBtn">
                         <i class="bi bi-check-circle me-2"></i> Submit Exam
                     </button>
+                {% else %}
+                    <button type="button" class="btn btn-secondary btn-lg disabled">
+                        <i class="bi bi-eye-slash me-2"></i> Preview Mode — Submission Disabled
+                    </button>
+                {% endif %}
                 </div>
             </div>
         </div>

@@ -118,3 +118,24 @@ def publish_exam(exam_id):
         flash("Exam published successfully! Students can now see it.", "success")
 
     return redirect(url_for("exam.view_exam", exam_id=exam.id))
+
+
+@exam_bp.route("/<int:exam_id>/preview", methods=["GET"])
+def preview_exam(exam_id):
+    exam = Exam.query.get_or_404(exam_id)
+
+    # Load questions exactly like student view
+    questions = exam.questions.order_by("order_num").all()
+
+    total_questions = len(questions)
+    total_points = sum(q.points for q in questions)
+
+    # Render student template but disable submission
+    return render_template(
+        "student/take_exam.html",
+        exam=exam,
+        questions=questions,
+        total_questions=total_questions,
+        total_points=total_points,
+        preview_mode=True,  # IMPORTANT FLAG
+    )

@@ -20,6 +20,10 @@
             <a href="{{ url_for('analytics.exam_report', exam_id=exam.id) }}" class="btn btn-secondary">
                 <i class="bi bi-graph-up me-1"></i> Analytics
             </a>
+                        <!-- PREVIEW AS STUDENT BUTTON -->
+            <a href="{{ url_for('exam.preview_exam', exam_id=exam.id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-eye-fill me-1"></i> Preview as Student
+            </a>
             {% if exam.status != "published" %}
                 <a href="{{ url_for('exam.edit_exam', exam_id=exam.id) }}" class="btn btn-warning">
                     <i class="bi bi-pencil-square me-1"></i> Edit Exam
