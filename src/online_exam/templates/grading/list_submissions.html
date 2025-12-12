@@ -11,8 +11,11 @@
             <p class="text-muted mb-0">{{ exam.description }}</p>
         </div>
         <div>
-            <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-outline-secondary me-2">
+            <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left me-1"></i> Back to Questions
+            </a>
+            <a href="{{ url_for('analytics.exam_report', exam_id=exam.id) }}" class="btn btn-info me-2">
+                <i class="bi bi-graph-up me-1"></i> Performance Report
             </a>
         </div>
     </div>
@@ -42,24 +45,41 @@
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card text-center">
+            <div class="card text-center border-warning">
                 <div class="card-body">
-                    <h5 class="card-title text-muted">Graded</h5>
+                    <h5 class="card-title text-muted">Pending Grading</h5>
+                    <h2 class="mb-0 text-warning">
+                        {{ submissions|selectattr('status', 'equalto', 'pending')|list|length }}
+                    </h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-muted">Fully Graded</h5>
                     <h2 class="mb-0 text-success">
                         {{ submissions|selectattr('status', 'equalto', 'graded')|list|length }}
                     </h2>
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h5 class="card-title text-muted">Pending</h5>
-                    <h2 class="mb-0 text-warning">
-                        {{ submissions|selectattr('status', 'equalto', 'pending')|list|length }}
-                    </h2>
-                </div>
-            </div>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div class="mb-3">
+        <div class="btn-group" role="group">
+            <button type="button" class="btn btn-outline-secondary filter-btn active" data-filter="all">
+                All ({{ submissions|length }})
+            </button>
+            <button type="button" class="btn btn-outline-warning filter-btn" data-filter="pending">
+                <i class="bi bi-hourglass-split me-1"></i>
+                Pending ({{ submissions|selectattr('status', 'equalto', 'pending')|list|length }})
+            </button>
+            <button type="button" class="btn btn-outline-success filter-btn" data-filter="graded">
+                <i class="bi bi-check-circle me-1"></i>
+                Graded ({{ submissions|selectattr('status', 'equalto', 'graded')|list|length }})
+            </button>
         </div>
     </div>
 
@@ -75,49 +95,72 @@
                     <thead class="table-light">
                         <tr>
                             <th style="width: 5%">#</th>
-                            <th style="width: 25%">Student Name</th>
-                            <th style="width: 15%">Score</th>
-                            <th style="width: 15%">Percentage</th>
+                            <th style="width: 20%">Student Name</th>
+                            <th style="width: 12%">Score</th>
+                            <th style="width: 12%">Percentage</th>
                             <th style="width: 15%">Status</th>
-                            <th style="width: 15%">Submitted</th>
-                            <th style="width: 10%">Actions</th>
+                            <th style="width: 18%">Submitted</th>
+                            <th style="width: 18%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for submission in submissions %}
-                        <tr>
+                        <tr class="submission-row" data-status="{{ submission.status }}">
                             <td>{{ loop.index }}</td>
                             <td><strong>{{ submission.student_name }}</strong></td>
                             <td>
-                                <span class="badge bg-info">{{ submission.total_score }}/{{ submission.max_score
-                                    }}</span>
+                                <span class="badge bg-info">{{ submission.total_score }}/{{ submission.max_score }}</span>
                             </td>
                             <td>
                                 {% if submission.percentage >= 80 %}
-                                <span class="badge bg-success">{{ submission.percentage }}%</span>
+                                <span class="badge bg-success fs-6">{{ "%.1f"|format(submission.percentage) }}%</span>
                                 {% elif submission.percentage >= 50 %}
-                                <span class="badge bg-warning text-dark">{{ submission.percentage }}%</span>
+                                <span class="badge bg-primary fs-6">{{ "%.1f"|format(submission.percentage) }}%</span>
                                 {% else %}
-                                <span class="badge bg-danger">{{ submission.percentage }}%</span>
+                                <span class="badge bg-danger fs-6">{{ "%.1f"|format(submission.percentage) }}%</span>
                                 {% endif %}
                             </td>
                             <td>
-                                {% if submission.status == 'graded' %}
-                                <span class="badge bg-success">Graded</span>
+                                {% if submission.status == 'pending' %}
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="bi bi-hourglass-split me-1"></i>
+                                        Pending Grading
+                                    </span>
+                                {% elif submission.status == 'graded' %}
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Fully Graded
+                                    </span>
+                                {% elif submission.status == 'published' %}
+                                    <span class="badge bg-info">
+                                        <i class="bi bi-eye me-1"></i>
+                                        Published
+                                    </span>
                                 {% else %}
-                                <span class="badge bg-warning text-dark">Pending</span>
+                                    <span class="badge bg-secondary">{{ submission.status|title }}</span>
                                 {% endif %}
                             </td>
-                            <td>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') }}</td>
                             <td>
-                                <a href="{{ url_for('grading.view_results', submission_id=submission.id) }}"
-                                    class="btn btn-sm btn-outline-primary me-1" title="View Results">
-                                    <i class="bi bi-eye"></i> View
-                                </a>
-                                <a href="{{ url_for('grading.manual_grade', submission_id=submission.id) }}"
-                                    class="btn btn-sm btn-outline-success" title="Grade Manually">
-                                    <i class="bi bi-pencil"></i> Grade
-                                </a>
+                                <small>{{ submission.submitted_at.strftime('%Y-%m-%d %H:%M') if submission.submitted_at else 'N/A' }}</small>
+                            </td>
+                            <td>
+                                {% if submission.status == 'pending' %}
+                                    <!-- Pending: Show Grade button prominently -->
+                                    <a href="{{ url_for('grading.manual_grade', submission_id=submission.id) }}"
+                                        class="btn btn-sm btn-warning" title="Grade This Submission">
+                                        <i class="bi bi-pencil-square"></i> Grade Now
+                                    </a>
+                                {% else %}
+                                    <!-- Graded: Show View and Re-grade options -->
+                                    <a href="{{ url_for('grading.view_results', submission_id=submission.id) }}"
+                                        class="btn btn-sm btn-outline-primary me-1" title="View Results">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a href="{{ url_for('grading.manual_grade', submission_id=submission.id) }}"
+                                        class="btn btn-sm btn-outline-secondary" title="Re-grade">
+                                        <i class="bi bi-pencil"></i> Re-grade
+                                    </a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
@@ -126,17 +169,62 @@
             </div>
         </div>
     </div>
+
+    <!-- Help Text for Pending Submissions -->
+    {% if submissions|selectattr('status', 'equalto', 'pending')|list|length > 0 %}
+    <div class="alert alert-warning mt-3" role="alert">
+        <h5 class="alert-heading">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            Action Required: {{ submissions|selectattr('status', 'equalto', 'pending')|list|length }} submission(s) pending grading
+        </h5>
+        <p class="mb-0">
+            These submissions contain written questions that need manual grading. 
+            Click <strong>"Grade Now"</strong> to review and grade them.
+        </p>
+    </div>
+    {% endif %}
+
     {% else %}
     <!-- Empty State -->
     <div class="card">
         <div class="card-body text-center py-5">
             <i class="bi bi-inbox display-1 text-muted"></i>
             <h4 class="mt-3">No submissions yet</h4>
-            <a href="{{ url_for('grading.submit_exam', exam_id=exam.id) }}" class="btn btn-primary mt-3">
-                <i class="bi bi-plus-circle me-1"></i> Take Exam
-            </a>
+            <p class="text-muted">Students haven't submitted any exams yet.</p>
         </div>
     </div>
     {% endif %}
 </div>
+
+<!-- JavaScript for Filtering -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const filterButtons = document.querySelectorAll('.filter-btn');
+    const rows = document.querySelectorAll('.submission-row');
+    
+    filterButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Update active button
+            filterButtons.forEach(btn => btn.classList.remove('active'));
+            this.classList.add('active');
+            
+            const filter = this.getAttribute('data-filter');
+            
+            // Filter rows
+            rows.forEach(row => {
+                const status = row.getAttribute('data-status');
+                
+                if (filter === 'all') {
+                    row.style.display = '';
+                } else if (filter === status) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    });
+});
+</script>
+
 {% endblock %}

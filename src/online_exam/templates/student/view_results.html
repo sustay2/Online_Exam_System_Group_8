@@ -5,12 +5,28 @@
 {% block content %}
 <div class="container mt-4">
 
-    <!-- Success Alert -->
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <h5 class="alert-heading"><i class="bi bi-check-circle me-2"></i>Exam Submitted Successfully!</h5>
-        <p class="mb-0">Your exam has been submitted. You can view your results below.</p>
+    <!-- Status Alert -->
+    {% if submission.status == 'pending' %}
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading">
+            <i class="bi bi-hourglass-split me-2"></i>Grading In Progress
+        </h5>
+        <p class="mb-0">
+            Your exam has been submitted successfully! 
+            Your MCQ questions have been auto-graded, but written questions are still pending instructor review.
+            Check back later for your final score.
+        </p>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
+    {% else %}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <h5 class="alert-heading">
+            <i class="bi bi-check-circle me-2"></i>Grading Complete!
+        </h5>
+        <p class="mb-0">Your exam has been fully graded. You can view your complete results below.</p>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
 
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -18,23 +34,44 @@
             <h1 class="mb-1">Exam Results</h1>
             <h2 class="mb-0">{{ exam.title }}</h2>
             <p class="text-muted mb-0">Student: <strong>{{ submission.student_name }}</strong></p>
-            <p class="text-muted">Submitted: {{ submission.submitted_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
+            <p class="text-muted">Submitted: {{ submission.submitted_at.strftime('%B %d, %Y at %I:%M %p') if submission.submitted_at else 'N/A' }}</p>
         </div>
         <div>
+            {% if submission.status == 'graded' %}
             <a href="{{ url_for('student.download_results', submission_id=submission.id) }}" class="btn btn-outline-primary">
                 <i class="bi bi-download me-1"></i> Download CSV
             </a>
+            {% endif %}
         </div>
     </div>
 
     <!-- Score Card -->
     <div class="row justify-content-center mb-4">
         <div class="col-md-8">
+            {% if submission.status == 'pending' %}
+            <!-- Partial Score Card -->
+            <div class="card text-center border-warning border-3">
+                <div class="card-body py-4">
+                    <h6 class="text-muted text-uppercase mb-2">Current Score (Partial)</h6>
+                    <h1 class="display-3 text-warning mb-3">
+                        {{ "%.1f"|format(submission.percentage) }}%
+                    </h1>
+                    <h4 class="mb-3">{{ submission.total_score }} out of {{ submission.max_score }} points</h4>
+                    
+                    <div class="alert alert-warning mb-0">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Note:</strong> This is your score for auto-graded MCQ questions only. 
+                        Your final score will include written questions after instructor grading.
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <!-- Final Score Card -->
             <div class="card text-center {% if submission.percentage >= 50 %}border-success{% else %}border-danger{% endif %} border-3">
                 <div class="card-body py-4">
-                    <h6 class="text-muted text-uppercase mb-2">Your Score</h6>
+                    <h6 class="text-muted text-uppercase mb-2">Final Score</h6>
                     <h1 class="display-1 {% if submission.percentage >= 50 %}text-success{% else %}text-danger{% endif %} mb-3">
-                        {{ submission.percentage }}%
+                        {{ "%.1f"|format(submission.percentage) }}%
                     </h1>
                     <h4 class="mb-3">{{ submission.total_score }} out of {{ submission.max_score }} points</h4>
 
@@ -56,6 +93,7 @@
                     </div>
                 </div>
             </div>
+            {% endif %}
         </div>
     </div>
 
@@ -65,7 +103,7 @@
             <h4 class="mb-4"><i class="bi bi-clipboard-check me-2"></i>Answer Review</h4>
 
             {% for answer, question in answers %}
-            <div class="card mb-3 {% if question.is_mcq() and not answer.is_correct %}border-danger{% elif question.is_mcq() and answer.is_correct %}border-success{% endif %}">
+            <div class="card mb-3 {% if question.is_mcq() and not answer.is_correct %}border-danger{% elif question.is_mcq() and answer.is_correct %}border-success{% elif submission.status == 'pending' and question.is_written() %}border-warning{% endif %}">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <span>
                         <strong>Question {{ question.order_num }}</strong>
@@ -77,6 +115,7 @@
                     </span>
                     <span>
                         {% if question.is_mcq() %}
+                            <!-- MCQ Status -->
                             {% if answer.is_correct %}
                                 <span class="badge bg-success">
                                     <i class="bi bi-check-circle me-1"></i>Correct (+{{ answer.points_earned }} pts)
@@ -87,13 +126,14 @@
                                 </span>
                             {% endif %}
                         {% else %}
-                            {% if answer.points_earned > 0 or answer.instructor_comment %}
-                                <span class="badge bg-info">
-                                    <i class="bi bi-pencil me-1"></i>Graded: {{ answer.points_earned }}/{{ question.points }} pts
+                            <!-- Written Status -->
+                            {% if submission.status == 'pending' %}
+                                <span class="badge bg-warning text-dark">
+                                    <i class="bi bi-hourglass-split me-1"></i>Pending Grading
                                 </span>
                             {% else %}
-                                <span class="badge bg-secondary">
-                                    <i class="bi bi-hourglass-split me-1"></i>Awaiting Manual Grading
+                                <span class="badge bg-info">
+                                    <i class="bi bi-pencil me-1"></i>Graded: {{ answer.points_earned }}/{{ question.points }} pts
                                 </span>
                             {% endif %}
                         {% endif %}
@@ -159,8 +199,8 @@
                             </div>
                         </div>
 
-                        <!-- Instructor Feedback (if available) -->
-                        {% if answer.points_earned > 0 or answer.instructor_comment %}
+                        <!-- Instructor Feedback (if graded) -->
+                        {% if submission.status != 'pending' %}
                         <div class="mt-3">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <strong><i class="bi bi-person-badge me-1"></i>Instructor Feedback:</strong>
@@ -177,10 +217,11 @@
                             {% endif %}
                         </div>
                         {% else %}
+                        <!-- Pending Grading Message -->
                         <div class="alert alert-warning mb-0">
                             <i class="bi bi-clock-history me-2"></i>
-                            <strong>Grading Status:</strong> This question is pending manual grading by your instructor. 
-                            Please check back later for your score and feedback.
+                            <strong>Status:</strong> Your instructor will review and grade this answer soon. 
+                            Check back later for your score and feedback.
                         </div>
                         {% endif %}
                     {% endif %}
@@ -190,7 +231,7 @@
 
             <!-- Back Button -->
             <div class="text-center mt-5 mb-4">
-                <a href="{{ url_for('exam.list_exams') }}" class="btn btn-primary btn-lg px-5">
+                <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary btn-lg px-5">
                     <i class="bi bi-house-door me-2"></i> Back to Dashboard
                 </a>
             </div>
