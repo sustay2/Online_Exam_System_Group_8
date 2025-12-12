@@ -11,11 +11,6 @@
         <div class="d-flex gap-2">
 
             <!-- Manage Questions Button - Always visible (INSTRUCTORS) -->
-            {% if exam.status == "published" %}
-                <a href="{{ url_for('student.take_exam', exam_id=exam.id) }}" class="btn btn-primary btn-lg">
-                    <i class="bi bi-pencil-square me-1"></i> Take Exam
-                </a>
-            {% endif %}
             <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-info">
                 <i class="bi bi-list-check me-1"></i> Manage Questions
             </a>
@@ -25,6 +20,10 @@
                         <!-- PREVIEW AS STUDENT BUTTON -->
             <a href="{{ url_for('exam.preview_exam', exam_id=exam.id) }}" class="btn btn-outline-primary">
                 <i class="bi bi-eye-fill me-1"></i> Preview as Student
+            </a>
+                        <!-- VIEW SUBMISSIONS BUTTON -->
+            <a href="{{ url_for('grading.list_submissions', exam_id=exam.id) }}" class="btn btn-warning">
+                <i class="bi bi-people me-1"></i> View Submissions
             </a>
             {% if exam.status != "published" %}
                 <a href="{{ url_for('exam.edit_exam', exam_id=exam.id) }}" class="btn btn-warning">

@@ -139,3 +139,15 @@ def preview_exam(exam_id):
         total_points=total_points,
         preview_mode=True,  # IMPORTANT FLAG
     )
+
+@exam_bp.route("/<int:exam_id>/delete", methods=["POST"])
+def delete_exam(exam_id):
+    exam = Exam.query.get_or_404(exam_id)
+    if exam.status != "draft":
+        flash("Cannot delete a published exam.", "warning")
+        return redirect(url_for("exam.list_exams"))
+
+    db.session.delete(exam)
+    db.session.commit()
+    flash("Draft exam deleted successfully.", "success")
+    return redirect(url_for("exam.list_exams"))
