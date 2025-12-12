@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for
+from flask import Flask, g, redirect, request, session, url_for
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -20,7 +20,15 @@ def create_app(test_config=None):
     # Initialize extensions
     db.init_app(app)
 
-    from .models import Answer, Exam, PasswordResetToken, Question, Submission, User  # noqa: F401
+    from .models import (  # noqa: F401
+        Answer,
+        Exam,
+        LoginAttempt,
+        PasswordResetToken,
+        Question,
+        Submission,
+        User,
+    )
 
     migrate.init_app(app, db)
 
@@ -32,6 +40,8 @@ def create_app(test_config=None):
     from .routes.question_routes import question_bp
     from .routes.schedule_routes import schedule_bp
     from .routes.student_routes import student_bp
+    from .routes.rbac_routes import rbac_bp
+    from .routes.profile_routes import profile_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(exam_bp)
@@ -40,6 +50,61 @@ def create_app(test_config=None):
     app.register_blueprint(student_bp)
     app.register_blueprint(schedule_bp)
     app.register_blueprint(analytics_bp)
+    app.register_blueprint(rbac_bp)
+    app.register_blueprint(profile_bp)
+
+    auth_paths = {"/login", "/register", "/auth/verify-otp"}
+
+    @app.before_request
+    def load_current_user():
+        user_id = session.get("user_id")
+        g.current_user = User.query.get(user_id) if user_id else None
+
+    def _is_public_path(path: str) -> bool:
+        if path.startswith("/static/") or path == "/favicon.ico":
+            return True
+
+        if path == "/":
+            return True
+
+        if path in auth_paths or path.startswith("/reset-password"):
+            return True
+
+        return False
+
+    @app.before_request
+    def enforce_rbac():
+        path = request.path
+
+        if _is_public_path(path):
+            return None
+
+        user_id = session.get("user_id")
+        user_role = session.get("user_role")
+
+        if not user_id or not user_role:
+            return redirect(url_for("auth.login"))
+
+        profile_paths = {"/profile", "/profile/2fa/enable", "/profile/2fa/disable"}
+
+        if path.startswith("/student"):
+            if user_role != "student":
+                return "Forbidden", 403
+            return None
+
+        if path in profile_paths:
+            return None
+
+        if user_role == "student":
+            return "Forbidden", 403
+
+    @app.context_processor
+    def inject_user():
+        current_user = getattr(g, "current_user", None)
+        return {
+            "current_user": current_user,
+            "is_authenticated": current_user is not None,
+        }
 
     @app.route("/")
     def home():

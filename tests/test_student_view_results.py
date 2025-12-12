@@ -1,6 +1,11 @@
+import pytest
+
 from online_exam.models.exam import Exam
 from online_exam.models.question import Question
 from online_exam.models.submission import Answer, Submission
+
+
+pytestmark = pytest.mark.rbac_role("student")
 
 
 def test_view_results_page(client, db_session):

@@ -1,7 +1,8 @@
 from datetime import datetime
 from .. import db
 
-class Exam(db.Model):
+
+class Exam(db.Model):  # type: ignore[misc, name-defined]
     __tablename__ = "exams"
     __table_args__ = {"extend_existing": True}
 
@@ -24,5 +25,5 @@ class Exam(db.Model):
         "Question",
         backref="exam",
         lazy="dynamic",  # allows you to call .order_by() and .all()
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
     )

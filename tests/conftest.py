@@ -81,6 +81,23 @@ def sample_student(app):
 
 
 @pytest.fixture
+def sample_admin(app):
+    """Create a sample admin user."""
+    with app.app_context():
+        admin = User(
+            username="admin1",
+            name="Admin One",
+            email="admin@example.com",
+            role="admin",
+            password_hash="",
+        )
+        admin.set_password("Password123!")
+        db.session.add(admin)
+        db.session.commit()
+        yield admin
+
+
+@pytest.fixture
 def sample_exam(app, sample_instructor):
     """Create a sample exam."""
     with app.app_context():
@@ -148,3 +165,33 @@ def sample_submission(app, sample_exam, sample_student):
         db.session.add(submission)
         db.session.commit()
         yield submission
+
+
+@pytest.fixture
+def login_user(client):
+    def _login(user: User):
+        with client.session_transaction() as session:
+            session["user_id"] = user.id
+            session["user_role"] = user.role
+
+    return _login
+
+
+@pytest.fixture(autouse=True)
+def apply_default_login(
+    request, client, sample_instructor, sample_student, sample_admin, login_user
+):
+    marker = request.node.get_closest_marker("rbac_role")
+    role = marker.args[0] if marker else "instructor"
+
+    if role == "none":
+        return
+
+    if role == "student":
+        user = sample_student
+    elif role == "admin":
+        user = sample_admin
+    else:
+        user = sample_instructor
+
+    login_user(user)

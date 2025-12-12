@@ -1,7 +1,12 @@
 from datetime import datetime, timedelta
 
+import pytest
+
 from online_exam import db
 from online_exam.models.password_reset_token import PasswordResetToken
+
+
+pytestmark = pytest.mark.rbac_role("none")
 
 
 def test_reset_request_creates_token(client, app, sample_student):
