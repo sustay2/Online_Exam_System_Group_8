@@ -3,6 +3,7 @@ from .password_reset_token import PasswordResetToken
 from .question import Question
 from .submission import Answer, Submission
 from .user import User
+from .login_attempt import LoginAttempt
 
 __all__ = [
     "PasswordResetToken",
@@ -12,4 +13,5 @@ __all__ = [
     "Question",
     "Submission",
     "Answer",
+    "LoginAttempt",
 ]

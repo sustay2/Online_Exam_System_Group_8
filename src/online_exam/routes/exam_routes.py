@@ -140,6 +140,7 @@ def preview_exam(exam_id):
         preview_mode=True,  # IMPORTANT FLAG
     )
 
+
 @exam_bp.route("/<int:exam_id>/delete", methods=["POST"])
 def delete_exam(exam_id):
     exam = Exam.query.get_or_404(exam_id)

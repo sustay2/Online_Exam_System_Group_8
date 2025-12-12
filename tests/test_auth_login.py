@@ -1,4 +1,8 @@
+import pytest
+
 from online_exam.models.user import User
+
+pytestmark = pytest.mark.rbac_role("none")
 
 
 def test_valid_login_redirects_to_student_dashboard(client, sample_student):
@@ -12,6 +16,19 @@ def test_valid_login_redirects_to_student_dashboard(client, sample_student):
     assert response.request.path == "/student/dashboard"
     assert response.status_code == 200
     assert b"Student Dashboard" in response.data or b"Available Exams" in response.data
+
+
+def test_valid_admin_login_redirects_to_login_attempts(client, sample_admin):
+    """Admins should land on login attempts analytics page after login."""
+
+    response = client.post(
+        "/login",
+        data={"email": "admin@example.com", "password": "Password123!"},
+        follow_redirects=True,
+    )
+
+    assert response.request.path == "/analytics/login-attempts"
+    assert response.status_code == 200
 
 
 def test_valid_instructor_login_redirects_to_exams(client, sample_instructor):

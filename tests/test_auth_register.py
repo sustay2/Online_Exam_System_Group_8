@@ -3,6 +3,9 @@ import pytest
 from online_exam.models.user import User
 
 
+pytestmark = pytest.mark.rbac_role("none")
+
+
 @pytest.fixture
 def registration_data():
     return {

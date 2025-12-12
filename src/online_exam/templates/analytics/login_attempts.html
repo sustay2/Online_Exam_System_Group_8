@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h1 class="h3 mb-1">Login Attempts</h1>
+    <p class="text-muted mb-0">Recent authentication activity with IP metadata</p>
+  </div>
+  <span class="badge text-bg-secondary">Admin only</span>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm">
+      <div class="card-header bg-light">
+        <h2 class="h5 mb-0">Recent Attempts</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th scope="col">User</th>
+              <th scope="col">IP Address</th>
+              <th scope="col">Timestamp (UTC)</th>
+              <th scope="col" class="text-center">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if attempts %}
+              {% for attempt in attempts %}
+                <tr>
+                  <td class="fw-semibold">{{ attempt.user_identifier }}</td>
+                  <td><span class="text-monospace">{{ attempt.ip_address }}</span></td>
+                  <td>{{ attempt.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                  <td class="text-center">
+                    {% if attempt.success %}
+                      <span class="badge text-bg-success"><i class="bi bi-check-circle me-1"></i>Success</span>
+                    {% else %}
+                      <span class="badge text-bg-danger"><i class="bi bi-exclamation-triangle me-1"></i>Failed</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">No login attempts recorded yet.</td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    <div class="card shadow-sm h-100">
+      <div class="card-header bg-light">
+        <h2 class="h5 mb-0">Failed attempts by IP</h2>
+      </div>
+      <div class="card-body">
+        {% if failed_by_ip %}
+          <ul class="list-group list-group-flush">
+            {% for record in failed_by_ip %}
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <span class="text-monospace">{{ record.ip_address }}</span>
+                <span class="badge text-bg-danger">{{ record.attempt_count }}</span>
+              </li>
+            {% endfor %}
+          </ul>
+        {% else %}
+          <p class="text-muted mb-0">No failed attempts to display.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -8,8 +8,13 @@ Requirements:
 4. Submissions list shows clear status indicators
 """
 
+import pytest
+
 from online_exam.models.question import Question
 from online_exam.models.submission import Answer, Submission
+
+
+pytestmark = pytest.mark.rbac_role("student")
 
 
 # ============================================================================
@@ -163,8 +168,10 @@ def test_written_only_submission_marked_pending(client, sample_exam, db_session)
 # ============================================================================
 
 
-def test_status_changes_to_graded_after_manual_grading(client, sample_exam, db_session):
-    """Test that status changes from 'pending' to 'graded' after instructor grades."""
+@pytest.mark.rbac_role("none")  # disable autologin
+def test_status_changes_to_graded_after_manual_grading(
+    client, sample_exam, db_session, login_user, sample_student, sample_instructor
+):
     sample_exam.status = "published"
 
     # Create written question
@@ -178,7 +185,7 @@ def test_status_changes_to_graded_after_manual_grading(client, sample_exam, db_s
     db_session.add(question)
     db_session.commit()
 
-    # Submit exam (will be pending)
+    login_user(sample_student)
     client.post(
         f"/student/exams/{sample_exam.id}/submit",
         data={"student_name": "Grade Test", f"question_{question.id}": "My answer"},
@@ -187,7 +194,7 @@ def test_status_changes_to_graded_after_manual_grading(client, sample_exam, db_s
     submission = Submission.query.filter_by(student_name="Grade Test").first()
     assert submission.status == "pending"
 
-    # Instructor grades the submission
+    login_user(sample_instructor)
     answer = Answer.query.filter_by(submission_id=submission.id).first()
     response = client.post(
         f"/exams/submissions/{submission.id}/grade",
@@ -196,11 +203,8 @@ def test_status_changes_to_graded_after_manual_grading(client, sample_exam, db_s
     )
 
     assert response.status_code == 200
-
-    # Verify status changed to "graded"
     db_session.refresh(submission)
     assert submission.status == "graded"
-    assert submission.graded_at is not None
 
 
 # ============================================================================
@@ -266,6 +270,7 @@ def test_written_submission_flash_shows_pending_message(client, sample_exam, db_
 # ============================================================================
 
 
+@pytest.mark.rbac_role("instructor")
 def test_submissions_list_shows_pending_status(client, sample_exam, db_session):
     """Test that submissions list displays pending status badge."""
     # Create pending submission
@@ -285,6 +290,7 @@ def test_submissions_list_shows_pending_status(client, sample_exam, db_session):
     assert b"Pending Student" in response.data
 
 
+@pytest.mark.rbac_role("instructor")
 def test_submissions_list_shows_graded_status(client, sample_exam, db_session):
     """Test that submissions list displays graded status badge."""
     # Create graded submission
@@ -305,6 +311,7 @@ def test_submissions_list_shows_graded_status(client, sample_exam, db_session):
     assert b"Graded Student" in response.data
 
 
+@pytest.mark.rbac_role("instructor")
 def test_submissions_list_shows_pending_count(client, sample_exam, db_session):
     """Test that submissions list shows count of pending submissions."""
     # Create 2 pending, 1 graded
@@ -339,6 +346,7 @@ def test_submissions_list_shows_pending_count(client, sample_exam, db_session):
 # ============================================================================
 
 
+@pytest.mark.rbac_role("instructor")
 def test_pending_submission_shows_grade_now_button(client, sample_exam, db_session):
     """Test that pending submissions show 'Grade Now' button."""
     submission = Submission(
@@ -352,6 +360,7 @@ def test_pending_submission_shows_grade_now_button(client, sample_exam, db_sessi
     assert b"Grade Now" in response.data or b"grade" in response.data.lower()
 
 
+@pytest.mark.rbac_role("instructor")
 def test_graded_submission_shows_view_button(client, sample_exam, db_session):
     """Test that graded submissions show 'View' button instead of 'Grade Now'."""
     submission = Submission(

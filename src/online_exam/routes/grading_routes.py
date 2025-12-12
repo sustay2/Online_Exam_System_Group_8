@@ -187,5 +187,3 @@ def publish_grades(exam_id: int):
     flash("Grades published successfully", "success")
 
     return redirect(url_for("exam.view_exam", exam_id=exam.id))
-
-

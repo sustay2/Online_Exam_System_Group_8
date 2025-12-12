@@ -11,8 +11,13 @@ Acceptance Criteria:
 4. Confirmation message after submission
 """
 
+import pytest
+
 from online_exam.models.question import Question
 from online_exam.models.submission import Answer, Submission
+
+
+pytestmark = pytest.mark.rbac_role("student")
 
 # ============================================================================
 # STORY 3 - TEST 1: Display Take Exam Page

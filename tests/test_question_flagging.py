@@ -11,8 +11,13 @@ Acceptance Criteria:
 4. Does not affect grading
 """
 
+import pytest
+
+
 from online_exam.models.question import Question
 from online_exam.models.submission import Submission
+
+pytestmark = pytest.mark.rbac_role("student")
 
 
 # ============================================================================

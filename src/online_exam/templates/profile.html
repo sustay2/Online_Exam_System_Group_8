@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-lg-8">
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <h4 class="mb-3">Account Details</h4>
+        <dl class="row mb-0">
+          <dt class="col-sm-3">Name</dt>
+          <dd class="col-sm-9">{{ user.name }}</dd>
+          <dt class="col-sm-3">Username</dt>
+          <dd class="col-sm-9">{{ user.username }}</dd>
+          <dt class="col-sm-3">Email</dt>
+          <dd class="col-sm-9">{{ user.email }}</dd>
+          <dt class="col-sm-3">Role</dt>
+          <dd class="col-sm-9"><span class="badge bg-primary text-uppercase">{{ user.role }}</span></dd>
+        </dl>
+      </div>
+    </div>
+
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="mb-1">Two-Factor Authentication (2FA)</h5>
+            <p class="text-muted mb-0">Add an extra layer of security to your account.</p>
+          </div>
+          {% if user.two_factor_enabled %}
+          <span class="badge bg-success">Enabled</span>
+          {% else %}
+          <span class="badge bg-secondary">Disabled</span>
+          {% endif %}
+        </div>
+
+        <hr>
+
+        {% if user.two_factor_enabled %}
+        <form method="post" action="{{ url_for('profile.disable_two_factor') }}">
+          <p class="mb-3 text-muted">You will no longer need an OTP at login.</p>
+          <button class="btn btn-outline-danger" type="submit">Disable 2FA</button>
+        </form>
+        {% else %}
+        <form method="post" action="{{ url_for('profile.enable_two_factor') }}">
+          <p class="mb-3 text-muted">We will send a one-time code to your email when you sign in.</p>
+          <button class="btn btn-primary" type="submit">Enable 2FA</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

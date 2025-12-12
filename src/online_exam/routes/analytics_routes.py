@@ -4,9 +4,26 @@ from io import BytesIO
 from flask import Blueprint, render_template, send_file
 
 from ..models.exam import Exam
+from ..models.login_attempt import LoginAttempt
 from ..models.submission import Submission
+from ..utils.auth import role_required
 
 analytics_bp = Blueprint("analytics", __name__, url_prefix="/analytics")
+
+
+@analytics_bp.route("/login-attempts")
+@role_required("admin")
+def login_attempts():
+    """Render recent login attempts and quick failure aggregates for admins."""
+
+    attempts = LoginAttempt.query.order_by(LoginAttempt.timestamp.desc()).limit(50).all()
+    failed_by_ip = LoginAttempt.failed_counts_by_ip(limit=20)
+
+    return render_template(
+        "analytics/login_attempts.html",
+        attempts=attempts,
+        failed_by_ip=failed_by_ip,
+    )
 
 
 @analytics_bp.route("/exams/<int:exam_id>/report")
