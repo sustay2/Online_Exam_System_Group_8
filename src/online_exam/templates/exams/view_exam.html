@@ -9,31 +9,25 @@
         </div>
 
         <div class="d-flex gap-2">
-            <!-- Take Exam Button - Only for published exams (STUDENTS) -->
             {% if exam.status == "published" %}
                 <a href="{{ url_for('student.take_exam', exam_id=exam.id) }}" class="btn btn-primary btn-lg">
                     <i class="bi bi-pencil-square me-1"></i> Take Exam
                 </a>
             {% endif %}
-
-            <!-- Manage Questions Button - Always visible (INSTRUCTORS) -->
             <a href="{{ url_for('question.list_questions', exam_id=exam.id) }}" class="btn btn-info">
                 <i class="bi bi-list-check me-1"></i> Manage Questions
             </a>
-
             <a href="{{ url_for('analytics.exam_report', exam_id=exam.id) }}" class="btn btn-secondary">
                 <i class="bi bi-graph-up me-1"></i> Analytics
             </a>
-
-            <!-- Edit Button - Hidden if already published -->
+                        <!-- PREVIEW AS STUDENT BUTTON -->
+            <a href="{{ url_for('exam.preview_exam', exam_id=exam.id) }}" class="btn btn-outline-primary">
+                <i class="bi bi-eye-fill me-1"></i> Preview as Student
+            </a>
             {% if exam.status != "published" %}
                 <a href="{{ url_for('exam.edit_exam', exam_id=exam.id) }}" class="btn btn-warning">
                     <i class="bi bi-pencil-square me-1"></i> Edit Exam
                 </a>
-            {% endif %}
-
-            <!-- Publish Button - Only show if still draft -->
-            {% if exam.status != "published" %}
                 <form method="POST" action="{{ url_for('exam.publish_exam', exam_id=exam.id) }}" style="display: inline;">
                     <button type="submit"
                             class="btn btn-success"
@@ -42,8 +36,6 @@
                     </button>
                 </form>
             {% endif %}
-
-            <!-- Published Badge - Show when published -->
             {% if exam.status == "published" %}
                 <span class="btn btn-success disabled">
                     <i class="bi bi-check2-all me-1"></i> Published
@@ -56,8 +48,7 @@
         <div class="card-body p-4">
             <h5 class="fw-semibold mb-3">Exam Metadata</h5>
 
-            <p class="mb-2">
-                <strong>Status:</strong>
+            <p class="mb-2"><strong>Status:</strong>
                 {% if exam.status == "published" %}
                     <span class="badge bg-success">Published</span>
                 {% else %}
@@ -65,26 +56,17 @@
                 {% endif %}
             </p>
 
-            <p class="mb-2">
-                <strong>Created:</strong>
-                {{ exam.created_at.strftime('%Y-%m-%d %H:%M') }}
-            </p>
-
-            <p class="mb-4">
-                <strong>Last Updated:</strong>
-                {{ exam.updated_at.strftime('%Y-%m-%d %H:%M') }}
-            </p>
+            <p class="mb-2"><strong>Created:</strong> {{ exam.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            <p class="mb-4"><strong>Last Updated:</strong> {{ exam.updated_at.strftime('%Y-%m-%d %H:%M') }}</p>
 
             <hr>
 
             <h5 class="fw-semibold mt-4">Description</h5>
-            <div class="alert alert-light border text-muted">
-                {{ exam.description or "No description provided." }}
-            </div>
+            <div class="alert alert-light border text-muted">{{ exam.description or "No description provided." }}</div>
 
             <h5 class="fw-semibold mt-4">Instructions</h5>
             <div class="alert alert-light border text-muted">
-                {{ exam.instructions or "No instructions provided." }}
+                {{ exam.instructions | safe }}
             </div>
         </div>
     </div>

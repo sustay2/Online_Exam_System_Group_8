@@ -7,8 +7,8 @@ from flask import (
     redirect,
     render_template,
     request,
-    url_for,
     session,
+    url_for,
 )
 
 from .. import db
