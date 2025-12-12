@@ -15,7 +15,6 @@ Acceptance Criteria:
 
 from online_exam.models.submission import Submission
 
-
 # ============================================================================
 # STORY: PERFORMANCE REPORTS - TEST 1: View Report Page
 # ============================================================================

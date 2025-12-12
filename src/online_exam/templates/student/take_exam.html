@@ -4,17 +4,15 @@
 
 {% block content %}
 <div class="container mt-4">
-    <!-- Exam Header -->
     <div class="text-center mb-4">
         <h2>{{ exam.title }}</h2>
         <p class="text-muted">{{ exam.description }}</p>
     </div>
 
-    <!-- Instructions Card -->
     {% if exam.instructions %}
     <div class="alert alert-info mb-4">
         <h5 class="alert-heading"><i class="bi bi-info-circle me-2"></i>Instructions</h5>
-        <p class="mb-0">{{ exam.instructions }}</p>
+        <div>{{ exam.instructions | safe }}</div>
     </div>
     {% endif %}
 
@@ -78,31 +76,26 @@
 
     <!-- Exam Form -->
     <form method="POST" action="{{ url_for('student.submit_exam', exam_id=exam.id) }}" id="examForm">
-        
-        <!-- Student Name Card -->
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-person me-2"></i>Student Information</h5>
             </div>
             <div class="card-body">
-                <div class="mb-0">
-                    <label for="student_name" class="form-label fw-bold">
-                        Your Name <span class="text-danger">*</span>
-                    </label>
-                    <input 
-                        type="text" 
-                        class="form-control" 
-                        id="student_name" 
-                        name="student_name" 
-                        required 
-                        placeholder="Enter your full name"
-                        autocomplete="name"
-                    >
-                </div>
+                <label for="student_name" class="form-label fw-bold">
+                    Your Name <span class="text-danger">*</span>
+                </label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="student_name" 
+                    name="student_name" 
+                    {% if preview_mode %}disabled{% endif %}
+                    required 
+
+                >
             </div>
         </div>
 
-        <!-- Questions -->
         {% for question in questions %}
         <div class="card mb-3 question-card" id="question-{{ question.id }}" data-question-id="{{ question.id }}">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -134,80 +127,21 @@
                 <p class="mb-3 fw-semibold">{{ question.question_text }}</p>
 
                 {% if question.is_mcq() %}
-                <!-- MCQ Options -->
                 <div class="ms-3">
+                    {% for option, label in [('A', question.option_a), ('B', question.option_b), ('C', question.option_c), ('D', question.option_d)] %}
                     <div class="form-check mb-2">
-                        <input 
-                            class="form-check-input" 
-                            type="radio" 
-                            name="question_{{ question.id }}" 
-                            id="q{{ question.id }}_a" 
-                            value="A" 
-                            required
-                        >
-                        <label class="form-check-label" for="q{{ question.id }}_a">
-                            <strong>A.</strong> {{ question.option_a }}
-                        </label>
+                        <input class="form-check-input" type="radio" name="question_{{ question.id }}" {% if preview_mode %}disabled{% endif %}id="q{{ question.id }}_{{ option }}" value="{{ option }}" required>
+                        <label class="form-check-label" for="q{{ question.id }}_{{ option }}"><strong>{{ option }}.</strong> {{ label }}</label>
                     </div>
-                    <div class="form-check mb-2">
-                        <input 
-                            class="form-check-input" 
-                            type="radio" 
-                            name="question_{{ question.id }}" 
-                            id="q{{ question.id }}_b" 
-                            value="B" 
-                            required
-                        >
-                        <label class="form-check-label" for="q{{ question.id }}_b">
-                            <strong>B.</strong> {{ question.option_b }}
-                        </label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input 
-                            class="form-check-input" 
-                            type="radio" 
-                            name="question_{{ question.id }}" 
-                            id="q{{ question.id }}_c" 
-                            value="C" 
-                            required
-                        >
-                        <label class="form-check-label" for="q{{ question.id }}_c">
-                            <strong>C.</strong> {{ question.option_c }}
-                        </label>
-                    </div>
-                    <div class="form-check mb-2">
-                        <input 
-                            class="form-check-input" 
-                            type="radio" 
-                            name="question_{{ question.id }}" 
-                            id="q{{ question.id }}_d" 
-                            value="D" 
-                            required
-                        >
-                        <label class="form-check-label" for="q{{ question.id }}_d">
-                            <strong>D.</strong> {{ question.option_d }}
-                        </label>
-                    </div>
+                    {% endfor %}
                 </div>
                 {% else %}
-                <!-- Written Answer -->
-                <textarea 
-                    class="form-control written-answer" 
-                    name="question_{{ question.id }}" 
-                    data-question-id="{{ question.id }}"
-                    rows="6" 
-                    placeholder="Type your answer here..."
-                ></textarea>
-                <small class="text-muted mt-1 d-block">
-                    <i class="bi bi-cloud-check auto-save-indicator" style="display:none;"></i>
-                    <span class="auto-save-text"></span>
-                </small>
+                <textarea class="form-control written-answer" {% if preview_mode %}disabled{% endif %} name="question_{{ question.id }}" rows="6" placeholder="Type your answer here..."></textarea>
                 {% endif %}
             </div>
         </div>
         {% endfor %}
 
-        <!-- Submit Section (Sticky) -->
         <div class="card bg-light sticky-bottom shadow-lg" style="bottom: 20px;">
             <div class="card-body">
                 <div class="d-flex justify-content-between align-items-center">
@@ -230,7 +164,6 @@
                 </div>
             </div>
         </div>
-
     </form>
 </div>
 

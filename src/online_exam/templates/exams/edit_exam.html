@@ -15,7 +15,6 @@
         </a>
     </div>
 
-
     <!-- Edit Form -->
     <div class="card shadow-sm border-0 p-4">
         <form method="POST" action="{{ url_for('exam.edit_exam', exam_id=exam.id) }}">
@@ -42,25 +41,40 @@
 
             <div class="mb-3">
                 <label class="form-label fw-semibold">Instructions</label>
-                <textarea 
-                    class="form-control" 
-                    name="instructions" 
-                    rows="4"
-                >{{ exam.instructions }}</textarea>
+                <div id="instructionsEditor" style="height: 200px;"></div>
+                <input type="hidden" name="instructions" id="instructionsInput">
             </div>
 
             <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="btn btn-warning">
+                <button type="submit" class="btn btn-warning" onclick="submitInstructions()">
                     <i class="bi bi-save me-1"></i> Save Changes
                 </button>
 
-                <a href="{{ url_for('exam.view_exam', exam_id=exam.id) }}" 
-                   class="btn btn-outline-secondary">
+                <a href="{{ url_for('exam.view_exam', exam_id=exam.id) }}" class="btn btn-outline-secondary">
                     Cancel
                 </a>
             </div>
         </form>
     </div>
-
 </div>
+
+<!-- Quill JS -->
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+<script>
+    var quill = new Quill('#instructionsEditor', {
+        theme: 'snow',
+        modules: {
+            toolbar: [['bold', 'italic', 'underline'], [{ 'list': 'ordered' }, { 'list': 'bullet' }], ['link']]
+        }
+    });
+
+    // Load existing instructions
+    quill.root.innerHTML = `{{ exam.instructions | safe }}`;
+
+    function submitInstructions() {
+        var instructionsHtml = quill.root.innerHTML;
+        document.getElementById('instructionsInput').value = instructionsHtml;
+    }
+</script>
 {% endblock %}
